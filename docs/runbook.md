@@ -34,11 +34,14 @@ Every investigation is saved to `runs/investigations/` and traced to `runs/trace
   not support a specific root cause. Read `reason` and the open questions; they say what to look at next.
 - **Evidence** lines are marked `verified` (the quote exists in the cited tool output) or `UNVERIFIED`.
   Treat unverified lines as hypotheses. If no line verifies, the diagnosis is withheld automatically.
+- **NEEDS REVIEW (coverage check)** under a diagnosis means this run's output reached consumers and the
+  investigation did not examine what the delivery changed. The diagnosis may still be right. Compare the
+  columns the line names between this delivery and the previous one before acting on it.
 - **Consumer impact** says what consumers see now. `previous_version_served` means nothing from the
   failing run reached them; `inconsistent_data_served` means it did, and it is the only case where a
   rollback can be proposed.
-- **Guardrail events** list refused tool calls, unverified citations, policy rejections, fallback models,
-  and budget exhaustion. Any refused tool call on a real incident deserves a look at the trace.
+- **Guardrail events** list refused tool calls, unverified citations, policy rejections, coverage flags,
+  fallback models, and budget exhaustion. Any refused tool call on a real incident deserves a look at the trace.
 
 ## Approve or reject a proposal
 

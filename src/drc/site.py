@@ -3,8 +3,9 @@
 `drc site` writes one self-contained HTML page (hosted on GitHub Pages) from the published evaluation
 results, the labels, and the incident bundles. Nothing on the page calls a model: it shows what each
 investigator did in a recorded run, tool call by tool call, with the grounding check's verdict on every
-citation and the policy's verdict on every proposal. Rendering lives in `templates/site.html`; this
-module only gathers and serializes data.
+citation and the policy's verdict on every proposal. The coverage guardrail is replayed over runs recorded
+before it existed (drc.coverage), so every run shows its verdict. Rendering lives in `templates/site.html`;
+this module only gathers and serializes data.
 """
 
 from __future__ import annotations
@@ -15,7 +16,9 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from drc import coverage
 from drc.lab import store
+from drc.models import IncidentBundle, Investigation
 from drc.taxonomy import CATEGORIES, REMEDIATION_CATALOG
 
 REPO_URL = "https://github.com/KilgoreC1024/healthcare-data-reliability-copilot"
@@ -47,16 +50,19 @@ def _load_results(results_dir: Path) -> dict[str, list[dict[str, Any]]]:
     return runs
 
 
-def _investigation(inv: dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
+def _investigation(inv: dict[str, Any], case: dict[str, Any], bundle: IncidentBundle) -> dict[str, Any]:
     usage = inv.get("usage") or {}
+    replayed = coverage.replay(Investigation.model_validate(inv), bundle)
     return {
         **{k: case.get(k) for k in CASE_FIELDS},
-        "diagnosis": inv["diagnosis"],
+        "diagnosis": replayed.diagnosis.model_dump(mode="json"),
+        # True when the run predates the coverage guardrail and its verdict comes from the replay.
+        "review_replayed": "needs_review" not in inv["diagnosis"],
         "tool_calls": [
             {k: tc[k] for k in ("call_id", "name", "arguments", "output", "is_error")}
             for tc in inv["tool_calls"]
         ],
-        "guardrail_events": inv.get("guardrail_events") or [],
+        "guardrail_events": replayed.guardrail_events,
         "usage": {k: usage.get(k) for k in ("cost_usd", "turns", "input_tokens", "output_tokens")},
         "latency_s": inv.get("latency_s"),
     }
@@ -77,11 +83,12 @@ def payload(root: Path | None = None, results_dir: Path | None = None) -> dict[s
     incidents = []
     for incident_id in store.list_incidents(root):
         label = labels[incident_id]
-        incident = store.load_bundle(incident_id, root).incident
+        bundle = store.load_bundle(incident_id, root)
+        incident = bundle.incident
         results = {}
         for name, (cases, investigations) in by_run.items():
             if incident_id in investigations:
-                results[name] = _investigation(investigations[incident_id], cases[incident_id])
+                results[name] = _investigation(investigations[incident_id], cases[incident_id], bundle)
         incidents.append(
             {
                 "id": incident_id,
