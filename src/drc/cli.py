@@ -84,6 +84,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         trace_dir=RUNS / "traces" / f"eval-{args.agent}",
         on_result=progress,
         max_cost_usd=args.max_cost,
+        release=args.release,
     )
     out = Path(args.out or f"eval/results/{args.agent}.json")
     json_path, md_path = evaluation.write_results(result, out)
@@ -186,6 +187,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("eval", help="run the benchmark and score an investigator")
     agent_options(p)
     p.add_argument("--split", choices=["known", "novel", "adversarial"])
+    p.add_argument("--release", type=int, choices=[1, 2], help="only the incidents a benchmark release added")
     p.add_argument("--incident", action="append", help="limit to these incident ids (repeatable)")
     p.add_argument("--workers", type=int, default=1)
     p.add_argument("--out", help="results path (default eval/results/<agent>.json)")

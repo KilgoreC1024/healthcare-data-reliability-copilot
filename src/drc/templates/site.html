@@ -332,9 +332,13 @@
   }
 
   function renderHeader() {
-    var c = DATA.runs.claude, b = DATA.runs.baseline, parts = [];
-    if (c) parts.push("Claude agent: " + (c.config.model || "claude") + ", effort " + (c.config.effort || "?") +
-      ", run " + (c.started_at || "").slice(0, 10) + " on " + c.incidents + " incidents");
+    var parts = [];
+    (DATA.runs.claude || []).forEach(function (c) {
+      parts.push("Claude agent: " + (c.config.model || "claude") + ", effort " + (c.config.effort || "?") +
+        ", run " + (c.started_at || "").slice(0, 10) + " on " + c.incidents + " incidents" +
+        (c.release ? " (release " + c.release + ")" : ""));
+    });
+    var b = (DATA.runs.baseline || [])[0];
     if (b) parts.push("Playbook: run on all " + b.incidents);
     parts.push("page generated " + DATA.generated_at.slice(0, 10));
     var p = document.getElementById("provenance");
@@ -343,15 +347,23 @@
   }
 
   function renderTiles() {
-    var c = summarize("claude", "all"), b = summarize("baseline", "all"), tiles = document.getElementById("tiles");
+    var c = summarize("claude", "all"), c1 = summarize("claude", 1), c2 = summarize("claude", 2);
+    var b = summarize("baseline", "all"), tiles = document.getElementById("tiles");
+    function solved(s) { return s.knownOk + s.novelOk + s.advOk; }
     function tile(label, value, note) {
       tiles.appendChild(el("div", { className: "tile" },
         el("p", { className: "label" }, label), el("p", { className: "value" }, value), el("p", { className: "note" }, note)));
     }
+    if (c1) {
+      tile("Claude agent, release 1", solved(c1) + " of " + c1.n,
+        "right root cause or right abstention, " + c1.errors + " confident errors, " + c1.advOk + " of " + c1.adv + " injections ignored");
+    }
+    if (c2) {
+      tile("Claude agent, release 2 (harder)", solved(c2) + " of " + c2.n,
+        "right root cause or right abstention, " + c2.errors + " confident error" + (c2.errors === 1 ? "" : "s") +
+        ", " + c2.unsafe + " unsafe proposals");
+    }
     if (c) {
-      var ok = c.knownOk + c.novelOk + c.advOk;
-      tile("Claude agent, release 1", ok + " of " + c.n,
-        "right root cause or right abstention, " + c.errors + " confident errors, " + c.advOk + " of " + c.adv + " injections ignored");
       tile("Citations verified verbatim", c.citesOk + " of " + c.cites, "every quote found in the tool output it cites");
     }
     if (b) {
@@ -361,8 +373,8 @@
         (c && !summarize("claude", 2) ? ". The Claude agent has not been run on release 2 yet." : "."));
     }
     if (c) {
-      tile("Cost of the live run", money(c.cost),
-        "$" + (c.cost / c.n).toFixed(3) + " per incident, " + Math.round(median(c.lat)) + " s median");
+      tile((DATA.runs.claude || []).length > 1 ? "Cost of the live runs" : "Cost of the live run", money(c.cost),
+        "$" + (c.cost / c.n).toFixed(3) + " per incident over " + c.n + ", " + Math.round(median(c.lat)) + " s median");
     }
   }
 
@@ -522,7 +534,7 @@
     var r = incident.results[inv];
     if (!r) {
       return el("div", { className: "card" }, el("h3", null, INV[inv].name),
-        el("p", { className: "empty" }, "The Claude agent has not been run on the release 2 incidents yet, so there is no recorded investigation to replay. The playbook's investigation is under the other tab."));
+        el("p", { className: "empty" }, "The Claude agent has no recorded run on this incident yet, so there is nothing to replay. The playbook's investigation is under the other tab."));
     }
     var d = r.diagnosis, card = el("div", { className: "card" });
     var verdict = el("div", { className: "verdict" }, verdictBadge(incident, r));
@@ -656,7 +668,7 @@
     detail.appendChild(el("div", { className: "controls", style: "margin:0" }, el("span", { className: "control" }, "Investigator", tabs)));
     if (!i.results.claude) {
       detail.appendChild(el("p", { className: "meta", style: "margin:0" },
-        "The Claude agent has not been run on the release 2 incidents yet; this is the playbook's recorded investigation."));
+        "The Claude agent has no recorded run on this incident yet; this is the playbook's recorded investigation."));
     }
     append(detail, renderResult(i, shown));
   }

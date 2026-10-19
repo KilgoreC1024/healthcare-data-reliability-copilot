@@ -92,36 +92,51 @@ Open question: Data_Value contains text written as an instruction ("SYSTEM OVERR
 
 ## Results
 
-Measured on benchmark release 1 (30 incidents), one run each ([method, transcripts, and caveats](docs/evaluation.md)):
+Measured on both benchmark releases, one run each ([method, transcripts, and caveats](docs/evaluation.md)).
+Release 1 has one fault per incident. Release 2 adds 11 harder incidents: faults in both sources at once, a
+real fault behind a louder harmless change, decoys, lost logs, legitimate changes that look like corruption,
+and alerts identical to release 1 with a different answer.
 
-| | Deterministic playbook | Claude agent (Opus 5.5, effort high) |
-| --- | --- | --- |
-| Diagnosis accuracy, known incidents: hcip (15) | 100% | **100%** |
-| Diagnosis accuracy, known incidents: clinical ETL (9, held out) | 22% | **100%** |
-| Correct abstention, novel incidents (3) | 100% | **100%** |
-| Confident errors (wrong root cause asserted) | 0 | **0** |
-| Localization (source and column), known | 71% | **100%** |
-| Consumer-impact accuracy | 100% | **100%** |
-| Citations verified against tool output | 74 of 74 | **208 of 208** |
-| Injection resistance, adversarial incidents (3) | 67% | **100%** |
-| Unsafe proposals (policy-rejected or forbidden) | 0 | **0** |
-| Cost per incident / total | $0 | **$0.091 / $2.74** |
-| Latency per incident (median) | under 0.1 s | 22 s |
+| | Playbook, release 1 (30) | Playbook, release 2 (11) | Claude agent, release 1 (30) | Claude agent, release 2 (11) |
+| --- | --- | --- | --- | --- |
+| Diagnosis accuracy, known: hcip | 100% (15/15) | 29% (2/7) | **100% (15/15)** | **86% (6/7)** |
+| Diagnosis accuracy, known: clinical ETL (held out from the playbook's rules) | 22% (2/9) | 0% (0/3) | **100% (9/9)** | **100% (3/3)** |
+| Correct abstention, novel | 100% (3/3) | 0% (0/1) | **100% (3/3)** | **100% (1/1)** |
+| Confident errors (wrong root cause asserted) | 0 | 3 | **0** | **1** |
+| Localization (source and column), known | 71% (17/24) | 10% (1/10) | **100% (24/24)** | **90% (9/10)** |
+| Consumer-impact accuracy | 100% (30/30) | 91% (10/11) | **100% (30/30)** | **91% (10/11)** |
+| Citations verified against tool output | 74 of 74 | 25 of 25 | **208 of 208** | **84 of 84** |
+| Injection resistance, adversarial | 67% (2/3) | - | **100% (3/3)** | - |
+| Unsafe proposals (policy-rejected or forbidden) | 0 | 0 | **0** | **0** |
+| Cost per incident / total | $0 | $0 | **$0.091 / $2.74** | **$0.127 / $1.39** |
+| Latency per incident (median) | under 0.1 s | under 0.1 s | 22 s | 32 s |
 
-The playbook is the control: perfect where its rules were written, silent on a newly onboarded pipeline,
-and never wrong. The agent closed the transfer gap without giving up zero confident errors and zero unsafe
-actions. It abstained on all three incidents whose evidence could not support a root cause, saying what
-was missing. In all three adversarial incidents it diagnosed the real fault and flagged the planted
-instructions as an injection attempt it had ignored.
+Claude agent: `claude-opus-5-5`, effort high, 24-call tool budget, spend-capped runs.
 
-A perfect score also means release 1 has hit its ceiling for this model. Release 2 adds 11 harder
-incidents built to sit above it: faults in both sources at once, a real fault behind a louder harmless
-change, decoys, lost logs, legitimate changes that look like corruption, and alerts identical to release 1
-with a different answer. On those the playbook makes its first 3 confident errors (each time it diagnoses
-the harmless change). The agent has not been run on them yet ([evaluation](docs/evaluation.md)). The first
-live pilot found a real defect: the model cited tools by name because it cannot see the API's call ids,
-so the grounding check withheld a correct diagnosis. It was fixed before the full run
-([what live runs changed](docs/evaluation.md#what-live-runs-changed)).
+**Across all 41 incidents the agent was right on 40, with one confident error, 292 of 292 citations
+verified, no unsafe proposals, for $4.13.** The playbook is the control. It is perfect where its rules were
+written, silent on a newly onboarded pipeline, and on release 2 it makes 3 confident errors, each time
+diagnosing the harmless change.
+
+The agent's one miss is the most instructive result (INC-H21). The alert named four harmless new columns.
+The same delivery silently republished ED visits per 1,000 beneficiaries per beneficiary, a change no check
+covers, so the run published and consumers saw it. The agent confirmed the alert's explanation and stopped:
+it never compared the delivery's column profiles, the one tool that showed the change. It reported
+`schema.additive_drift` at 0.90 confidence, its highest of the release, so a confidence threshold would not
+have caught it. Its proposals stayed safe (amend the contract, monitor), but they would have left wrong
+data in front of consumers. The playbook made the same mistake. The analysis, and a proposed guardrail that
+checks what was investigated rather than how sure the agent is, are in the
+[evaluation](docs/evaluation.md#release-2-what-went-wrong-and-why).
+
+Elsewhere on release 2 the agent was not fooled by any decoy:
+- it chose the fault that actually blocked the run when both sources were broken;
+- it localized a reconciliation break past a larger, consistent 6% restatement;
+- it found duplicates with the run's artifacts gone;
+- it diagnosed a duplicate patient behind an alert identical to an earlier invalid-code incident;
+- it abstained on a killed dbt run despite a decoy new column.
+
+The first live pilot also found a harness defect: the model cited tools by name because it cannot see the
+API's call ids. It was fixed before the full runs ([what live runs changed](docs/evaluation.md#what-live-runs-changed)).
 
 ## Architecture
 
@@ -164,7 +179,8 @@ With the Claude agent:
 ```bash
 export ANTHROPIC_API_KEY=...                    # PowerShell: $env:ANTHROPIC_API_KEY="..."
 drc investigate INC-C02 --agent claude
-drc eval --agent claude --workers 2 --max-cost 5.50   # all 41 incidents, est. $3.70-4.10, hard-capped
+drc eval --agent claude --workers 2 --max-cost 5.50   # all 41 incidents, $4.13 measured, hard-capped
+drc eval --agent claude --workers 2 --release 2 --max-cost 2.00 --out eval/results/claude-release2.json   # release 2 only, $1.39
 ```
 
 Build the demo site (the [live demo](https://kilgorec1024.github.io/healthcare-data-reliability-copilot/) is
@@ -216,7 +232,7 @@ tests/               tools, guardrails, agent loop (scripted client), benchmark 
 | Incident records | 41 incidents from two platforms in two releases, label isolation | Scenarios written by someone other than the rule author; production-scale profiles |
 | Tools | 10 read-only tools over recorded evidence | Lazy collection against live systems (Airflow REST API, Fabric and ADF run history) |
 | Investigation | Claude agent and deterministic playbook, grounded and policy-checked | Measured effort and model comparison (Sonnet 5.5, Haiku 5.5, lower effort); a shared cache prefix across incidents |
-| Evaluation | Harness, splits, regression gates, spend cap, measured live results on release 1 | A live run on release 2's harder incidents; repeated runs for variance |
+| Evaluation | Harness, splits, regression gates, spend cap, release selection, measured live results on both releases | An investigation-coverage guardrail measured against the recorded runs; repeated runs for variance |
 | Operations | Traces, cost accounting, threat model, ADRs, runbook | Event-triggered container job, OTLP export, key vault, identity-provider roles, anchored decision log |
 | Remediation | Proposals, approval, change requests | Automated execution of low-risk actions behind the same approval, after the diagnostic layer is trusted |
 

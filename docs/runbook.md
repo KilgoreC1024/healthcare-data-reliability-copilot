@@ -60,7 +60,9 @@ drc audit-log
 
 ```bash
 drc eval --agent baseline --gate eval/gates/baseline.yml     # offline, about a second; CI runs this
-drc eval --agent claude --workers 2 --max-cost 4.50          # live, about $2.75; writes eval/results/claude.{json,md}
+drc eval --agent claude --workers 2 --max-cost 5.50          # live, all 41 incidents, $4.13 measured
+drc eval --agent claude --workers 2 --release 2 --max-cost 2.00 \
+  --out eval/results/claude-release2.json                    # one release, $1.39 measured, own results file
 drc eval --agent claude --split novel                        # one split
 drc eval --agent claude --incident INC-H16 --incident INC-C09
 ```

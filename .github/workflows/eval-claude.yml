@@ -5,6 +5,11 @@ name: Evaluate Claude agent
 on:
   workflow_dispatch:
     inputs:
+      release:
+        description: Benchmark release to evaluate (all = every incident)
+        default: "2"
+        type: choice
+        options: ["all", "1", "2"]
       model:
         description: Claude model id
         default: claude-opus-5-5
@@ -15,8 +20,8 @@ on:
         type: choice
         options: [low, medium, high, xhigh]
       max_cost:
-        description: Spend cap in USD (no new investigation starts past it)
-        default: "4.50"
+        description: Spend cap in USD; empty = 2.00 for release 2, 4.50 for release 1, 6.50 for all
+        default: ""
         type: string
 
 permissions:
@@ -33,20 +38,28 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -e .
-      - name: Evaluate every benchmark incident
+      - name: Evaluate the selected release
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RELEASE: ${{ inputs.release }}
           MODEL: ${{ inputs.model }}
           EFFORT: ${{ inputs.effort }}
           MAX_COST: ${{ inputs.max_cost }}
-        run: >
-          drc eval --agent claude --model "$MODEL" --effort "$EFFORT" --workers 2 --max-cost "$MAX_COST"
-          --out eval-results/claude.json --gate eval/gates/claude.yml
+        shell: bash
+        run: |
+          case "$RELEASE" in
+            1)   default_cap=4.50; gate=eval/gates/claude.yml;          scope=(--release 1) ;;
+            2)   default_cap=2.00; gate=eval/gates/claude-release2.yml; scope=(--release 2) ;;
+            *)   default_cap=6.50; gate=eval/gates/claude.yml;          scope=() ;;
+          esac
+          drc eval --agent claude --model "$MODEL" --effort "$EFFORT" --workers 2 \
+            --max-cost "${MAX_COST:-$default_cap}" "${scope[@]}" \
+            --out "eval-results/claude-release-$RELEASE.json" --gate "$gate"
       - name: Upload results and traces
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: claude-evaluation
+          name: claude-evaluation-release-${{ inputs.release }}
           path: |
             eval-results
             runs/traces

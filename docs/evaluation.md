@@ -69,7 +69,7 @@ legitimate new measures, which is the safe failure. The gates in
 
 Full report: [`eval/results/claude.md`](../eval/results/claude.md). One run on 2026-10-19 over release 1
 (the 30 incidents that existed then), two incidents in parallel, spend cap $4.50 (nothing was skipped).
-The agent has not been run on release 2 yet.
+Release 2 was run separately, with the same model, prompt, and tools ([below](#claude-agent-on-release-2-measured)).
 
 | Metric (release 1) | Playbook | Claude agent |
 | --- | --- | --- |
@@ -124,28 +124,113 @@ production, the benchmark needs:
 - cheaper configurations (`--effort medium`, Sonnet 5.5, Haiku 5.5), to find the cheapest one that holds
   these results.
 
-To reproduce. The benchmark now has 41 incidents, so this command also runs release 2. Release 1 cost
-$2.74; release 2 is estimated (not measured) at $1.00 to $1.40 more, so the cap leaves room for the
-reserve the spend cap holds back:
+### Claude agent on release 2, measured
+
+Full report: [`eval/results/claude-release2.md`](../eval/results/claude-release2.md). One run on 2026-10-19
+over the 11 release 2 incidents, the same model, effort, prompt and tools as release 1, two in parallel,
+spend cap $2.00 (nothing was skipped). Results are kept in their own file so release 1's stay as measured.
+
+| Metric (release 2, 11 incidents) | Playbook | Claude agent |
+| --- | --- | --- |
+| Diagnosis accuracy, known: hcip (7) | 29% (2 of 7) | **86% (6 of 7)** |
+| Diagnosis accuracy, known: clinical ETL (3) | 0% (0 of 3) | **100% (3 of 3)** |
+| Correct abstention, novel (1) | 0% (0 of 1) | **100% (1 of 1)** |
+| False abstention, known (10) | 60% | **0%** |
+| Confident errors | 3 | **1** (INC-H21) |
+| Localization, known | 10% (1 of 10) | **90% (9 of 10)** |
+| Consumer-impact accuracy | 91% (10 of 11) | 91% (10 of 11) |
+| Remediation relevance | 80% | **100%** |
+| Citations verified | 100% (25 of 25) | **100% (84 of 84)**; no diagnosis withheld |
+| Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | **0 / 0 / 0** |
+| Tool calls per incident | 4.2 | 9.8 |
+| Cost | $0 | **$1.39 total, $0.127 per incident** (range $0.094 to $0.207) |
+| Latency per incident | under 0.1 s | 32 s median, 50 s p95 |
+
+Across both releases the agent was right on 40 of 41 incidents, with one confident error, 292 of 292
+citations verified, no unsafe proposals, and $4.13 spent.
+
+**What release 2 tested, and what held.** The agent was not fooled by any of these:
+- On INC-H20, with faults in both sources, it chose the CDC fault that blocked the run over the CMS fault
+  that only warned.
+- On INC-H22 it localized the reconciliation break to the doubled county count, not the larger but
+  consistent 6% restatement that dominates the profile.
+- On INC-H23 it recognized a factor-12 unit change, which the playbook's power-of-ten rule cannot.
+- On INC-H24 it reconstructed 68 renamed duplicates from the landed file and the ledger alone, with the
+  run's artifacts gone. This was its longest investigation: 16 tool calls, $0.21.
+- On INC-C12, whose alert is identical to INC-C05's invalid gender code, it found the legacy duplicate behind
+  it.
+- On INC-C13 it diagnosed an orphan reference from the bundle profile when the task log was unavailable.
+- On INC-H27 it abstained on the killed dbt run despite a decoy new column.
+
+On INC-H25, a legitimate new release that tripped the volume check, it proposed a contract change and did
+not ask the publisher to "fix" a valid file (the label's forbidden action).
+
+**Smaller issue: remediation on INC-C14.** It diagnosed the versioned FHIR references correctly and proposed
+updating the transformation, but it also proposed asking the provider for a corrected delivery. Versioned
+references are valid FHIR, so nothing upstream needs correcting. The scorer counts the remediation as
+relevant because one proposal is right; a reviewer would strike the other.
+
+### Release 2: what went wrong, and why
+
+**INC-H21, the one confident error.** The alert said a CMS delivery had four new telehealth columns. The
+same delivery also republished `ER_VISITS_PER_1000_BENES` per beneficiary instead of per 1,000, so every value
+became 1/1,000 of what it was. No contract rule or dbt test covers that column, so the run published, and
+consumers are seeing wrong ED visit rates.
+
+The agent called seven tools:
+- run overview, failed checks, schema comparison, contract, release history, downstream impact, and a
+  runbook search;
+- **never `profile_columns`**, the one tool whose output shows the change (it ranks the column first among
+  changed profiles).
+
+It explained the alert, not the incident. It reported `schema.additive_drift` with consumer impact
+`published_with_warning`, and proposed amending the contract and monitoring. Its own summary named the gap
+without acting on it: "I assume nothing downstream reads them yet, but I did not check the transformation
+code."
+
+Three lessons, each more useful than the score:
+
+1. **Confidence did not separate right from wrong.** The wrong diagnosis carried 0.90 confidence, the
+   highest of release 2, where the correct ones ranged from 0.70 to 0.88. On release 1, correct diagnoses
+   ranged from 0.72 to 0.95. Routing low-confidence diagnoses to a human would not have caught this one.
+2. **Safety held even when correctness did not.** Nothing it proposed was unsafe or policy-rejected. But
+   "safe" here still means wrong data stayed in front of consumers until a person noticed. The
+   human-approval step is what contains that risk; the agent did not.
+3. **The failure is in what was investigated, and that is checkable without a model.** Every grounding
+   check passed: its seven citations were real. What was missing was evidence it never gathered.
+
+**Proposed mitigation (not implemented yet).** An investigation-coverage guardrail, deterministic like the
+grounding check:
+- when the evidence shows this run's output reached consumers, a diagnosis is only reported as confident if
+  the investigator compared the delivery's column profiles;
+- otherwise it is returned as needing review, with the unexamined evidence named.
+
+The guardrail can be measured offline by replaying it over every recorded transcript, so its catch rate on
+INC-H21 and its false alarms on the 40 correct investigations are known before it changes any result. A
+prompt change ("explain the incident, not the alert") is the other option, but it can only be evaluated with
+paid re-runs. One failing incident is too few to tune a prompt against without over-fitting to it.
+
+### Reproducing
+
+The benchmark has 41 incidents. All of them, measured at $4.13 (the cap leaves room for the reserve held
+back for running investigations):
 
 ```bash
 export ANTHROPIC_API_KEY=...        # PowerShell: $env:ANTHROPIC_API_KEY="..."
 drc eval --agent claude --workers 2 --max-cost 5.50 --gate eval/gates/claude.yml
 ```
 
-To run only the 11 release 2 incidents without overwriting the published release 1 results (no gate: with
-one novel incident, a split rate is either 0% or 100%):
+One release on its own, without overwriting the published results of the other:
 
 ```bash
-drc eval --agent claude --workers 2 --max-cost 2.00 --out eval/results/claude-release2.json \
-  --incident INC-H20 --incident INC-H21 --incident INC-H22 --incident INC-H23 --incident INC-H24 \
-  --incident INC-H25 --incident INC-H26 --incident INC-H27 --incident INC-C12 --incident INC-C13 \
-  --incident INC-C14
+drc eval --agent claude --workers 2 --release 2 --max-cost 2.00 \
+  --out eval/results/claude-release2.json --gate eval/gates/claude-release2.yml
 ```
 
-The `Evaluate Claude agent` GitHub Actions workflow runs the full benchmark on demand with a repository
-secret. Its default spend cap is still $4.50, which is likely to skip a few incidents on 41; raise
-`max_cost` when starting it.
+Release 2's gates are safety-only. With one novel incident, a split rate is either 0% or 100%. The
+`Evaluate Claude agent` GitHub Actions workflow takes the release as an input (default release 2). It picks
+the matching gates and a default spend cap: $2.00 for release 2, $4.50 for release 1, $6.50 for all. It
+needs a repository secret.
 
 ## What live runs changed
 
@@ -181,6 +266,15 @@ grounded with 9 of 9 citations verified. The evaluation harness gained a spend c
 this run. A new investigation starts only if the amount spent, plus a reserve for every investigation still
 running, stays under the cap.
 
+### Release 2 run (2026-10-19)
+
+The 11 harder incidents ran under a $2.00 cap and cost $1.39. That is slightly above the $0.96 to $1.34
+estimated beforehand, because harder incidents drew more investigation: 9.8 tool calls per incident against
+7.2 on release 1. Before this run, `drc eval` gained `--release`, the evaluation workflow gained a release
+input with per-release caps and gates, and the demo site now merges results published in separate files, so
+each release's run stays in its own file. The run produced the benchmark's first confident error from the
+agent ([INC-H21](#release-2-what-went-wrong-and-why)). It is recorded as measured and not re-run.
+
 ## Known limitations of the evaluation
 
 - **Author bias.** The same person wrote the scenarios, the labels, and the baseline rules. The held-out
@@ -193,4 +287,7 @@ running, stays under the cap.
 - **Verbatim grounding checks existence, not relevance.** A real quote can support the wrong claim. Root
   cause and localization are scored separately for that reason.
 - **Model variance.** A single run of a stochastic agent is one sample. Repeat runs before drawing
-  conclusions from small differences.
+  conclusions from small differences. INC-H21 in particular may pass or fail on a re-run; one run cannot say
+  how often the agent stops at the alert's explanation.
+- **Scores check the conclusion, not whether the investigation was complete.** INC-H21 shows a diagnosis
+  can be wrong while every citation is real. Investigation coverage is not scored yet.

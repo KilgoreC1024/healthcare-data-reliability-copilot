@@ -35,12 +35,15 @@ CASE_FIELDS = (
 )
 
 
-def _load_results(results_dir: Path) -> dict[str, dict[str, Any]]:
+def _load_results(results_dir: Path) -> dict[str, list[dict[str, Any]]]:
+    """Every published run per investigator: `<name>.json`, then any `<name>-<suffix>.json` (for example one
+    benchmark release run on its own). A later file wins for an incident that appears in more than one."""
     runs = {}
     for name in INVESTIGATORS:
-        path = results_dir / f"{name}.json"
-        if path.is_file():
-            runs[name] = json.loads(path.read_text(encoding="utf-8"))
+        paths = [results_dir / f"{name}.json"] + sorted(results_dir.glob(f"{name}-*.json"))
+        loaded = [json.loads(p.read_text(encoding="utf-8")) for p in paths if p.is_file()]
+        if loaded:
+            runs[name] = loaded
     return runs
 
 
@@ -66,10 +69,10 @@ def payload(root: Path | None = None, results_dir: Path | None = None) -> dict[s
     runs = _load_results(results_dir)
     by_run = {
         name: (
-            {c["incident_id"]: c for c in run["cases"]},
-            {i["incident"]["incident_id"]: i for i in run["investigations"]},
+            {c["incident_id"]: c for run in run_list for c in run["cases"]},
+            {i["incident"]["incident_id"]: i for run in run_list for i in run["investigations"]},
         )
-        for name, run in runs.items()
+        for name, run_list in runs.items()
     }
     incidents = []
     for incident_id in store.list_incidents(root):
@@ -92,13 +95,25 @@ def payload(root: Path | None = None, results_dir: Path | None = None) -> dict[s
             }
         )
 
-    runs_info = {
-        name: {
-            "config": run.get("config") or {},
-            "started_at": run.get("started_at"),
-            "incidents": len(run["cases"]),
+    def release_of(run: dict[str, Any]) -> int | None:
+        """The run's benchmark release: recorded by `drc eval --release`, or implied when every incident it
+        covered belongs to one release."""
+        releases = {
+            labels[c["incident_id"]].get("release", 1) for c in run["cases"] if c["incident_id"] in labels
         }
-        for name, run in runs.items()
+        return run.get("release") or (releases.pop() if len(releases) == 1 else None)
+
+    runs_info = {
+        name: [
+            {
+                "config": run.get("config") or {},
+                "started_at": run.get("started_at"),
+                "incidents": len(run["cases"]),
+                "release": release_of(run),
+            }
+            for run in run_list
+        ]
+        for name, run_list in runs.items()
     }
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

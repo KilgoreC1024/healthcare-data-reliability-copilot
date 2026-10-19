@@ -167,6 +167,7 @@ def run(
     trace_dir: Path | None = None,
     on_result: Callable[[dict[str, Any]], None] | None = None,
     max_cost_usd: float | None = None,
+    release: int | None = None,
 ) -> dict[str, Any]:
     labels = store.load_labels()
     cap = SpendCap(max_cost_usd) if max_cost_usd is not None else None
@@ -174,6 +175,8 @@ def run(
     ids = incident_ids or [i for i in store.list_incidents() if i in labels]
     if split:
         ids = [i for i in ids if labels[i]["split"] == split]
+    if release is not None:
+        ids = [i for i in ids if labels[i].get("release", 1) == release]
 
     def one(incident_id: str) -> tuple[dict[str, Any], Investigation] | None:
         if cap is not None and not cap.admit():
@@ -216,6 +219,7 @@ def run(
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started)),
         "wall_clock_s": round(time.time() - started, 1),
         "max_cost_usd": max_cost_usd,
+        "release": release,
         "skipped_by_spend_cap": sorted(skipped),
         "metrics": summarize(cases),
         "cases": cases,
