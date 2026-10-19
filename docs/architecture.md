@@ -85,7 +85,8 @@ Warnings that also fired on the previous published run are recorded as such, not
 
 See [ADR 0005](adr/0005-agent-loop-on-the-claude-api.md). In short: `claude-opus-5-5` at `high` effort,
 24 tool calls maximum, final answer constrained to the taxonomy and the remediation catalog, prompt caching
-on the static prefix, per-incident cost computed from token usage (`drc.pricing`).
+on the static prefix, per-incident cost computed from token usage (`drc.pricing`), and a spend cap on
+evaluations (`drc eval --max-cost`). Measured: $0.091 and 22 seconds per incident (median).
 
 ## Target deployment (roadmap)
 

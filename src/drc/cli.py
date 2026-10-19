@@ -66,6 +66,9 @@ def cmd_eval(args: argparse.Namespace) -> int:
     from drc import evaluation
 
     def progress(case: dict) -> None:
+        if "predicted" not in case:
+            print(f"  {case['incident_id']}  {case['outcome']}", flush=True)
+            return
         print(
             f"  {case['incident_id']}  {case['outcome']:9} {str(case['predicted'] or '(abstained)'):40} "
             f"${case['cost_usd']:.3f}  {case['latency_s']:.1f}s",
@@ -80,6 +83,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         workers=args.workers,
         trace_dir=RUNS / "traces" / f"eval-{args.agent}",
         on_result=progress,
+        max_cost_usd=args.max_cost,
     )
     out = Path(args.out or f"eval/results/{args.agent}.json")
     json_path, md_path = evaluation.write_results(result, out)
@@ -178,6 +182,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--workers", type=int, default=1)
     p.add_argument("--out", help="results path (default eval/results/<agent>.json)")
     p.add_argument("--gate", help="YAML file of metric thresholds; exit 1 if any is violated")
+    p.add_argument(
+        "--max-cost",
+        type=float,
+        help="spend cap in USD: no new investigation starts once spend plus a running reserve would exceed it",
+    )
     p.set_defaults(func=cmd_eval)
 
     p = sub.add_parser("approve", help="record a human decision on a remediation proposal")

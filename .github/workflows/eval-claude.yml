@@ -14,6 +14,10 @@ on:
         default: high
         type: choice
         options: [low, medium, high, xhigh]
+      max_cost:
+        description: Spend cap in USD (no new investigation starts past it)
+        default: "4.50"
+        type: string
 
 permissions:
   contents: read
@@ -34,8 +38,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MODEL: ${{ inputs.model }}
           EFFORT: ${{ inputs.effort }}
+          MAX_COST: ${{ inputs.max_cost }}
         run: >
-          drc eval --agent claude --model "$MODEL" --effort "$EFFORT" --workers 4
+          drc eval --agent claude --model "$MODEL" --effort "$EFFORT" --workers 2 --max-cost "$MAX_COST"
           --out eval-results/claude.json --gate eval/gates/claude.yml
       - name: Upload results and traces
         if: always()

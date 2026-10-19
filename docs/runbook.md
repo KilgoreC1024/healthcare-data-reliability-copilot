@@ -60,10 +60,15 @@ drc audit-log
 
 ```bash
 drc eval --agent baseline --gate eval/gates/baseline.yml     # offline, about a second; CI runs this
-drc eval --agent claude --workers 4                          # live; writes eval/results/claude.{json,md}
+drc eval --agent claude --workers 2 --max-cost 4.50          # live, about $2.75; writes eval/results/claude.{json,md}
 drc eval --agent claude --split novel                        # one split
 drc eval --agent claude --incident INC-H16 --incident INC-C09
 ```
+
+`--max-cost` is a hard spend cap in USD. A new investigation starts only if the amount spent, plus a reserve
+for every investigation still running (the most expensive one so far, at least $0.30), stays within the cap.
+Incidents it skips are listed in the report and left out of the metrics. With prepaid API credit, set the
+cap below your balance.
 
 Commit results files only from runs you intend to publish, and record the model and effort (the results
 file does this in `config`).

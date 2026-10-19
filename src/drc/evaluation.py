@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import statistics
+import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -127,6 +128,37 @@ def summarize(cases: list[dict[str, Any]]) -> dict[str, Any]:
     return metrics
 
 
+class SpendCap:
+    """Admission control for paid evaluations.
+
+    A new investigation starts only if what has been spent, plus a reserve for every investigation still
+    running and for the new one, stays within the limit. The reserve is the most expensive investigation
+    seen so far (at least `min_reserve`), so parallel workers cannot jointly run far past the cap.
+    """
+
+    def __init__(self, limit_usd: float, min_reserve_usd: float = 0.30):
+        self.limit = limit_usd
+        self.min_reserve = min_reserve_usd
+        self.spent = 0.0
+        self.running = 0
+        self.largest = 0.0
+        self._lock = threading.Lock()
+
+    def admit(self) -> bool:
+        with self._lock:
+            reserve = max(self.largest, self.min_reserve)
+            if self.spent + (self.running + 1) * reserve > self.limit:
+                return False
+            self.running += 1
+            return True
+
+    def settle(self, cost_usd: float) -> None:
+        with self._lock:
+            self.running -= 1
+            self.spent += cost_usd
+            self.largest = max(self.largest, cost_usd)
+
+
 def run(
     investigator: Investigator,
     incident_ids: list[str] | None = None,
@@ -134,13 +166,21 @@ def run(
     workers: int = 1,
     trace_dir: Path | None = None,
     on_result: Callable[[dict[str, Any]], None] | None = None,
+    max_cost_usd: float | None = None,
 ) -> dict[str, Any]:
     labels = store.load_labels()
+    cap = SpendCap(max_cost_usd) if max_cost_usd is not None else None
+    skipped: list[str] = []
     ids = incident_ids or [i for i in store.list_incidents() if i in labels]
     if split:
         ids = [i for i in ids if labels[i]["split"] == split]
 
-    def one(incident_id: str) -> tuple[dict[str, Any], Investigation]:
+    def one(incident_id: str) -> tuple[dict[str, Any], Investigation] | None:
+        if cap is not None and not cap.admit():
+            skipped.append(incident_id)
+            if on_result:
+                on_result({"incident_id": incident_id, "outcome": "skipped (spend cap)"})
+            return None
         bundle = store.load_bundle(incident_id)
         catalog = store.load_catalog(bundle.incident.platform)
         tracer = Tracer(trace_dir / f"{incident_id}.jsonl" if trace_dir else None)
@@ -157,6 +197,8 @@ def run(
             )
         finally:
             tracer.flush()
+            if cap is not None:
+                cap.settle(investigation.usage.cost_usd)
         case = score_case(labels[incident_id], investigation)
         if any(e.startswith("investigation error") for e in investigation.guardrail_events):
             case["outcome"] = "error"
@@ -166,13 +208,15 @@ def run(
 
     started = time.time()
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        results = list(pool.map(one, ids))
+        results = [r for r in pool.map(one, ids) if r is not None]
     cases = [r[0] for r in results]
     return {
         "investigator": investigator.name,
         "config": getattr(investigator, "config", {}),
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started)),
         "wall_clock_s": round(time.time() - started, 1),
+        "max_cost_usd": max_cost_usd,
+        "skipped_by_spend_cap": sorted(skipped),
         "metrics": summarize(cases),
         "cases": cases,
         "investigations": [r[1].model_dump(mode="json") for r in results],
@@ -210,6 +254,12 @@ def render_markdown(result: dict[str, Any]) -> str:
         f"# Evaluation: {result['investigator']}",
         "",
         f"Run {result['started_at']} · {m['incidents']} incidents · wall clock {result['wall_clock_s']} s"
+        + (f" · spend cap ${result['max_cost_usd']:.2f}" if result.get("max_cost_usd") is not None else "")
+        + (
+            f" · **{len(result['skipped_by_spend_cap'])} skipped by the spend cap**"
+            if result.get("skipped_by_spend_cap")
+            else ""
+        )
         + (f" · config `{json.dumps(result['config'])}`" if result.get("config") else ""),
         "",
         "| Metric | Value |",

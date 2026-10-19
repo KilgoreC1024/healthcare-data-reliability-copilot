@@ -43,3 +43,20 @@ def test_novel_incidents_penalize_confident_root_causes():
     assert case("abstained", None)["outcome"] == "correct"
     assert case("diagnosed", "infra.compute_failure")["outcome"] == "correct"
     assert case("diagnosed", "semantic.unit_change")["outcome"] == "wrong"
+
+
+def test_spend_cap_stops_starting_investigations_before_the_limit():
+    class PricedBaseline(BaselineInvestigator):
+        name = "priced"
+
+        def investigate(self, bundle, catalog, tracer=None):
+            investigation = super().investigate(bundle, catalog, tracer)
+            investigation.usage.cost_usd = 0.5
+            return investigation
+
+    ids = ["INC-H01", "INC-H02", "INC-H03", "INC-H04", "INC-H05"]
+    result = evaluation.run(PricedBaseline(), incident_ids=ids, max_cost_usd=1.2)
+    assert result["metrics"]["incidents"] == 2
+    assert result["metrics"]["total_cost_usd"] == 1.0
+    assert result["skipped_by_spend_cap"] == ["INC-H03", "INC-H04", "INC-H05"]
+    assert "3 skipped by the spend cap" in evaluation.render_markdown(result)

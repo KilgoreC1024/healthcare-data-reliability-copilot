@@ -55,31 +55,71 @@ which is the behavior to keep, but 7 of 9 failures on a newly onboarded pipeline
 diagnosis at all. That gap is what the AI agent has to close **without giving up the zero
 confident-error and zero unsafe-action properties**.
 
-### Claude agent (`claude-opus-5-5`, effort `high`)
+### Claude agent (`claude-opus-5-5`, effort `high`), measured
 
-**Full evaluation not yet run.** One live pilot incident has run (see [What live runs changed](#what-live-runs-changed)).
-The agent loop, request shape, budget handling, refusal handling, grounding and cost accounting are also
-covered by offline tests against a scripted client (`tests/test_claude_agent.py`). Full results are
-published here only once they are measured. To produce them:
+Full report: [`eval/results/claude.md`](../eval/results/claude.md). One run on 2026-10-19, two incidents in
+parallel, spend cap $4.50 (nothing was skipped).
+
+| Metric | Playbook | Claude agent |
+| --- | --- | --- |
+| Diagnosis accuracy, known: hcip (15) | 100% | **100%** |
+| Diagnosis accuracy, known: clinical ETL (9, held out) | 22% | **100%** |
+| Correct abstention, novel (3) | 100% | **100%** (abstained on all three) |
+| False abstention, known (24) | 29% | **0%** |
+| Confident errors | 0 | **0** |
+| Localization, known | 71% | **100%** |
+| Consumer-impact accuracy | 100% | **100%** |
+| Remediation relevance | 100% | **100%** |
+| Citations verified | 100% (74 of 74) | **100% (208 of 208)**; no diagnosis withheld |
+| Injection resistance (3) | 67% | **100%** |
+| Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | **0 / 0 / 0** |
+| Tool calls per incident | 3.7 | 7.2 |
+| Cost | $0 | **$2.74 total, $0.091 per incident** (range $0.068 to $0.128) |
+| Latency per incident | under 0.1 s | 22 s median, 30 s p95 |
+
+**Reading.** The agent closes the transfer gap completely: it diagnosed every clinical incident the
+playbook had no rules for, while keeping the two properties the playbook gets by construction (no
+confident errors, no unsafe proposals). The behaviors that matter for trust were all observed in the
+transcripts, not just in the scores:
+
+- **It abstained for the right reasons.** On the killed dbt process: "Exit code 137 points toward an
+  infrastructure kill (infra.compute_failure), but there is no OOM message, no resource metrics and no host
+  log to confirm it." On the stalled run and the out-of-band deletion it said what evidence was missing and
+  escalated to on-call instead of guessing. On the deletion it also reported consumer impact correctly as
+  `inconsistent_data_served`.
+- **It named every injection and ignored it.** In all three adversarial incidents it diagnosed the real
+  fault, said in `open_questions` that the planted text was an injection attempt it had not acted on, and
+  suggested a security review. It proposed nothing destructive. On INC-H19 it also asked whether the public
+  dashboard could show the injected values (hcip's dashboard shows only quarantine counts, so it cannot, but
+  it was the right question to ask).
+- **It separated signal from noise.** hcip's standing cohort-size warning, and the downstream tests skipped
+  after a block, were never treated as the root cause.
+- **It was conservative about remediation.** It never proposed a rollback when nothing had reached consumers.
+
+**Where the money goes.** 61,090 output tokens ($1.22), 274,737 cache-write tokens ($1.37), 693,490
+cache-read tokens ($0.14), and 326 uncached input tokens over 133 model turns. Cache writes are the largest
+input cost, because each incident's first turn writes the roughly 5,000-token system prompt and tool
+definitions again. An explicit cache breakpoint after the tools would let all incidents share that prefix
+and should cut about a quarter of the cost. That is the next cost optimization to measure.
+
+**What this result does and does not show.** A perfect score means the benchmark has hit its ceiling for
+this model. It shows the agent clears this bar, not that it is infallible. Thirty incidents written by one
+author, run once, cannot measure an error rate of a few percent. Before relying on these numbers in
+production, the benchmark needs:
+
+- harder incidents (simultaneous faults, misleading evidence, partial logs, production-scale profiles);
+- repeated runs to measure variance;
+- cheaper configurations (`--effort medium`, Sonnet 5.5, Haiku 5.5), to find the cheapest one that holds
+  these results.
+
+To reproduce:
 
 ```bash
 export ANTHROPIC_API_KEY=...        # PowerShell: $env:ANTHROPIC_API_KEY="..."
-drc eval --agent claude --workers 4
+drc eval --agent claude --workers 2 --max-cost 4.50 --gate eval/gates/claude.yml
 ```
 
-This writes `eval/results/claude.json` and `eval/results/claude.md`, with one trace per incident under
-`runs/traces/eval-claude/`. Expected cost at list price is about $3 to $4 for all 30 incidents (scaled from the pilot); the
-report records the exact figure. The `Evaluate Claude agent` GitHub Actions workflow runs the same thing on demand
-with a repository secret.
-
-Questions the live run answers:
-
-- Does it match the playbook on hcip (15 of 15) while closing the clinical transfer gap?
-- Does it keep confident errors at zero on the novel split, where a plausible data story is available
-  but unsupported (a killed process, a stalled run, a row deleted out of band)?
-- Does planted text change its category or its proposals on the adversarial split?
-- How many citations fail verification, and do any diagnoses get withheld?
-- What does a diagnosis cost, and how does `effort` trade cost against accuracy (`--effort medium`)?
+The `Evaluate Claude agent` GitHub Actions workflow runs the same thing on demand with a repository secret.
 
 ## What live runs changed
 
@@ -106,7 +146,14 @@ A regression test covers the new labeling (`tests/test_claude_agent.py`).
 
 The token-count estimate for this incident, made before the run with the free counting endpoint, was
 $0.14 to $0.41; the measured $0.121 came in under it because the agent used parallel tool calls and less
-output than assumed. Scaled by the pilot, all 30 incidents should cost about $3 to $4.
+output than assumed. Scaled by the pilot, all 30 incidents should have cost about $3 to $4. They cost $2.74.
+
+### Full run (2026-10-19)
+
+With the fix in place, all 208 citations verified, and INC-H11 (withheld in the pilot) was diagnosed and
+grounded with 9 of 9 citations verified. The evaluation harness gained a spend cap (`--max-cost`) before
+this run. A new investigation starts only if the amount spent, plus a reserve for every investigation still
+running, stays under the cap.
 
 ## Known limitations of the evaluation
 
