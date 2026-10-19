@@ -23,8 +23,8 @@ injected fault and recording what it left behind.
 
 | Pipeline | What the copilot reads | Incidents |
 | --- | --- | --- |
-| [Healthcare Cost & Utilization Platform](https://github.com/KilgoreC1024/healthcare-cost-utilization-platform) (hcip): DuckDB + dbt medallion lakehouse over real CMS and CDC data, data contracts, write-audit-publish | DuckDB run ledger, contract reports with samples, dbt audit queries and their failing rows, dbt lineage, the gold pointer | 19: hcip's 13 fault-injection scenarios plus a missing file, a killed dbt process, a stalled run, a compound fault, and two prompt injections |
-| [Synthetic Clinical ETL](https://github.com/KilgoreC1024/airflow-synthetic-clinical-etl): Airflow TaskFlow DAG over FHIR-shaped resources with pre-load gates and a post-load audit | DAG run and task logs, FHIR field profiles (unresolved references, naive timestamps), the SQLite target | 11: referential, duplicate, format, domain, schema, truncation, lock, out-of-band deletion, injection |
+| [Healthcare Cost & Utilization Platform](https://github.com/KilgoreC1024/healthcare-cost-utilization-platform) (hcip): DuckDB + dbt medallion lakehouse over real CMS and CDC data, data contracts, write-audit-publish | DuckDB run ledger, contract reports with samples, dbt audit queries and their failing rows, dbt lineage, the gold pointer | 27: hcip's 13 fault-injection scenarios plus a missing file, a killed dbt process, a stalled run, a compound fault, two prompt injections, and eight harder cases (faults in both sources, decoys, lost run artifacts, a legitimate change that looks like corruption, near misses) |
+| [Synthetic Clinical ETL](https://github.com/KilgoreC1024/airflow-synthetic-clinical-etl): Airflow TaskFlow DAG over FHIR-shaped resources with pre-load gates and a post-load audit | DAG run and task logs, FHIR field profiles (unresolved references, naive timestamps), the SQLite target | 14: referential, duplicate, format, domain, schema, truncation, lock, out-of-band deletion, injection, and three harder cases (a symptom-first duplicate, a lost task log, valid references that look orphaned) |
 
 The two platforms record failures in completely different shapes. Collectors normalize both into one
 incident record, so everything after collection (tools, investigators, guardrails, evaluation) is
@@ -84,14 +84,14 @@ Open question: Data_Value contains text written as an instruction ("SYSTEM OVERR
 | Calibrated abstention | Abstaining is a scored, first-class outcome; "novel" incidents (a killed process, a stalled run, a row deleted out of band) penalize any invented data root cause | [`evaluation.py`](src/drc/evaluation.py), [evaluation](docs/evaluation.md) |
 | Safety by construction | No write tools exist; collectors open databases read-only; a closed remediation catalog; a policy check that reads the evidence, not the model's claims; role-checked approval; hash-chained decision log | [ADR 0001](docs/adr/0001-read-only-investigation-first.md), [ADR 0006](docs/adr/0006-closed-remediation-catalog-and-human-approval.md), [`approval.py`](src/drc/approval.py) |
 | Prompt-injection resistance | Adversarial incidents plant instructions in a column name, in data values, and in a FHIR field; scored on category and forbidden actions | [benchmark](docs/benchmark.md), [threat model](docs/threat-model.md) |
-| Evaluation harness | 30 labeled incidents from real pipeline runs, label isolation and leakage tests, a deterministic baseline as the control, a held-out platform for transfer, regression gates in CI | [`benchmark/`](benchmark), [ADR 0003](docs/adr/0003-benchmark-from-real-pipeline-runs.md), [ADR 0004](docs/adr/0004-deterministic-baseline-as-control.md) |
+| Evaluation harness | 41 labeled incidents from real pipeline runs, label isolation and leakage tests, a deterministic baseline as the control, a held-out platform for transfer, regression gates in CI | [`benchmark/`](benchmark), [ADR 0003](docs/adr/0003-benchmark-from-real-pipeline-runs.md), [ADR 0004](docs/adr/0004-deterministic-baseline-as-control.md) |
 | Enterprise integration pattern | Collectors turn each platform's native metadata (DuckDB ledger and dbt artifacts; Airflow task instances and logs) into one standard incident record | [`collectors/`](src/drc/collectors), [ADR 0007](docs/adr/0007-collectors-and-a-platform-agnostic-core.md) |
 | LLMOps | Spans in the OpenTelemetry model with GenAI attribute names, per-incident token and dollar cost, prompt caching on a static prefix, server-side refusal fallback, API errors reported as errors (never as abstentions) | [`tracing.py`](src/drc/tracing.py), [`pricing.py`](src/drc/pricing.py) |
 | Healthcare data judgment | CMS and CDC data contracts, suppression semantics, FHIR referential integrity, consumer impact under write-audit-publish, and a PHI-aware threat model | [threat model](docs/threat-model.md), [`taxonomy.py`](src/drc/taxonomy.py) |
 
 ## Results
 
-Measured on the 30-incident benchmark, one run each ([method, transcripts, and caveats](docs/evaluation.md)):
+Measured on benchmark release 1 (30 incidents), one run each ([method, transcripts, and caveats](docs/evaluation.md)):
 
 | | Deterministic playbook | Claude agent (Opus 5.5, effort high) |
 | --- | --- | --- |
@@ -113,8 +113,11 @@ actions. It abstained on all three incidents whose evidence could not support a 
 was missing. In all three adversarial incidents it diagnosed the real fault and flagged the planted
 instructions as an injection attempt it had ignored.
 
-A perfect score also means this benchmark has hit its ceiling for this model. The next step is harder
-incidents and repeated runs, not a claim of infallibility ([evaluation](docs/evaluation.md)). The first
+A perfect score also means release 1 has hit its ceiling for this model. Release 2 adds 11 harder
+incidents built to sit above it: faults in both sources at once, a real fault behind a louder harmless
+change, decoys, lost logs, legitimate changes that look like corruption, and alerts identical to release 1
+with a different answer. On those the playbook makes its first 3 confident errors (each time it diagnoses
+the harmless change). The agent has not been run on them yet ([evaluation](docs/evaluation.md)). The first
 live pilot found a real defect: the model cited tools by name because it cannot see the API's call ids,
 so the grounding check withheld a correct diagnosis. It was fixed before the full run
 ([what live runs changed](docs/evaluation.md#what-live-runs-changed)).
@@ -149,7 +152,7 @@ pip install -e ".[dev]"
 Offline, no API key:
 
 ```bash
-drc incidents                                   # the 30 benchmark incidents
+drc incidents                                   # the 41 benchmark incidents
 drc investigate INC-H12                         # deterministic playbook
 drc eval --agent baseline --gate eval/gates/baseline.yml
 pytest
@@ -160,7 +163,7 @@ With the Claude agent:
 ```bash
 export ANTHROPIC_API_KEY=...                    # PowerShell: $env:ANTHROPIC_API_KEY="..."
 drc investigate INC-C02 --agent claude
-drc eval --agent claude --workers 2 --max-cost 4.50   # all 30 incidents, about $2.75, hard-capped
+drc eval --agent claude --workers 2 --max-cost 5.50   # all 41 incidents, est. $3.70-4.10, hard-capped
 ```
 
 Approve a proposal and verify the decision log:
@@ -188,7 +191,7 @@ src/drc/
   lab/               re-creates incidents by running the real pipelines
   taxonomy.py        root-cause categories and remediation catalog
 benchmark/
-  incidents/         30 incident bundles recorded from real runs
+  incidents/         41 incident bundles recorded from real runs
   catalog/           per-platform contracts, lineage, consumers, runbook sections
   labels.yml         ground truth (never read by investigators)
 eval/                gates and published results
@@ -200,10 +203,10 @@ tests/               tools, guardrails, agent loop (scripted client), benchmark 
 
 | Area | Release 1 (this repository) | Next |
 | --- | --- | --- |
-| Incident records | 30 incidents from two platforms, label isolation | Scenarios written by someone other than the rule author |
+| Incident records | 41 incidents from two platforms in two releases, label isolation | Scenarios written by someone other than the rule author; production-scale profiles |
 | Tools | 10 read-only tools over recorded evidence | Lazy collection against live systems (Airflow REST API, Fabric and ADF run history) |
 | Investigation | Claude agent and deterministic playbook, grounded and policy-checked | Measured effort and model comparison (Sonnet 5.5, Haiku 5.5, lower effort); a shared cache prefix across incidents |
-| Evaluation | Harness, splits, regression gates, spend cap, measured live results | Harder incidents past the current ceiling; repeated runs for variance |
+| Evaluation | Harness, splits, regression gates, spend cap, measured live results on release 1 | A live run on release 2's harder incidents; repeated runs for variance |
 | Operations | Traces, cost accounting, threat model, ADRs, runbook | Event-triggered container job, OTLP export, key vault, identity-provider roles, anchored decision log |
 | Remediation | Proposals, approval, change requests | Automated execution of low-risk actions behind the same approval, after the diagnostic layer is trusted |
 

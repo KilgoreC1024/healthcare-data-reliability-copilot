@@ -33,7 +33,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -e .
-      - name: Evaluate all 30 incidents
+      - name: Evaluate every benchmark incident
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MODEL: ${{ inputs.model }}

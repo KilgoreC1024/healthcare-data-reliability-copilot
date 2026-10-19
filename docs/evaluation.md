@@ -8,8 +8,9 @@ The goal is not "the agent works". It is three measured properties:
 
 ## Method
 
-`drc eval` runs an investigator over the 30 incidents in the [benchmark](benchmark.md), applies the same
-grounding check and policy to every result, and scores against `benchmark/labels.yml`.
+`drc eval` runs an investigator over the 41 incidents in the [benchmark](benchmark.md), applies the same
+grounding check and policy to every result, and scores against `benchmark/labels.yml`. Release 1 is the
+first 30 incidents; release 2 adds 11 harder ones (INC-H20 to H27, INC-C12 to C14).
 
 | Metric | Definition |
 | --- | --- |
@@ -26,7 +27,7 @@ grounding check and policy to every result, and scores against `benchmark/labels
 | Safety counters | Policy-rejected proposals, forbidden actions proposed, calls to tools that do not exist |
 | Cost and latency | USD from token usage at list price; p50 and p95 wall-clock seconds per incident |
 
-The benchmark is small (24 known, 3 novel, 3 adversarial), so results are reported as counts in the
+The benchmark is small (34 known, 4 novel, 3 adversarial), so results are reported as counts in the
 per-incident tables, and one incident moves a split's rate by several points. Treat differences of one or
 two incidents as noise unless they repeat across runs.
 
@@ -37,30 +38,40 @@ two incidents as noise unless they repeat across runs.
 Full report: [`eval/results/baseline.md`](../eval/results/baseline.md). Deterministic, so CI enforces these
 numbers exactly ([`eval/gates/baseline.yml`](../eval/gates/baseline.yml)).
 
-| Metric | Value |
-| --- | --- |
-| Diagnosis accuracy, known: hcip (15) | **100%** |
-| Diagnosis accuracy, known: clinical ETL (9, held out from its rules) | **22%** (2 of 9: the two generic infrastructure signatures) |
-| Correct abstention, novel (3) | 100% |
-| Confident errors | **0** |
-| Localization, known | 71% (every diagnosed incident localized correctly) |
-| Consumer-impact accuracy | 100% |
-| Citations verified | 100% (74 of 74) |
-| Injection resistance (3) | 67% (it abstains on the clinical injection case: no rule) |
-| Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 |
-| Tool calls per incident | 3.7 |
+| Metric | Release 1 (30) | Release 2 (11) | All 41 |
+| --- | --- | --- | --- |
+| Diagnosis accuracy, known: hcip | **100%** (15 of 15) | 29% (2 of 7) | 77% (17 of 22) |
+| Diagnosis accuracy, known: clinical ETL (held out from its rules) | **22%** (2 of 9: the two generic infrastructure signatures) | 0% (0 of 3) | 17% (2 of 12) |
+| Correct abstention, novel | 100% (3 of 3) | 0% (0 of 1) | 75% (3 of 4) |
+| Confident errors | **0** | **3** | 3 |
+| Localization, known | 71% (17 of 24) | 10% (1 of 10) | 53% (18 of 34) |
+| Consumer-impact accuracy | 100% | 91% (10 of 11) | 98% |
+| Citations verified | 100% (74 of 74) | 100% (25 of 25) | 100% (99 of 99) |
+| Injection resistance (3) | 67% (it abstains on the clinical injection case: no rule) | - | 67% |
+| Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
+| Tool calls per incident | 3.7 | 4.2 | 3.9 |
 
-Reading: a purpose-built playbook is excellent where it was built and silent elsewhere. It never guesses,
-which is the behavior to keep, but 7 of 9 failures on a newly onboarded pipeline go to a human with no
-diagnosis at all. That gap is what the AI agent has to close **without giving up the zero
+Reading release 1: a purpose-built playbook is excellent where it was built and silent elsewhere. It never
+guesses, which is the behavior to keep, but 7 of 9 failures on a newly onboarded pipeline go to a human with
+no diagnosis at all. That gap is what the AI agent has to close **without giving up the zero
 confident-error and zero unsafe-action properties**.
+
+Reading release 2: "never guesses" held only while each incident had one change. The playbook applies the
+first rule that fires, so when a delivery carries a second, harmless change, it diagnoses that change with
+full confidence: the tolerable CMS fault instead of the CDC fault that blocked the run (INC-H20), the new
+columns instead of the silent unit change that reached consumers (INC-H21), and a new column on a killed
+dbt run where the right answer is to abstain (INC-H27). On INC-H22 it gets the category right but
+localizes to the decoy restatement. It abstains on the factor-12 unit change, the lost run artifacts and the
+legitimate new measures, which is the safe failure. The gates in
+[`eval/gates/baseline.yml`](../eval/gates/baseline.yml) were moved to these values deliberately.
 
 ### Claude agent (`claude-opus-5-5`, effort `high`), measured
 
-Full report: [`eval/results/claude.md`](../eval/results/claude.md). One run on 2026-10-19, two incidents in
-parallel, spend cap $4.50 (nothing was skipped).
+Full report: [`eval/results/claude.md`](../eval/results/claude.md). One run on 2026-10-19 over release 1
+(the 30 incidents that existed then), two incidents in parallel, spend cap $4.50 (nothing was skipped).
+The agent has not been run on release 2 yet.
 
-| Metric | Playbook | Claude agent |
+| Metric (release 1) | Playbook | Claude agent |
 | --- | --- | --- |
 | Diagnosis accuracy, known: hcip (15) | 100% | **100%** |
 | Diagnosis accuracy, known: clinical ETL (9, held out) | 22% | **100%** |
@@ -107,19 +118,34 @@ this model. It shows the agent clears this bar, not that it is infallible. Thirt
 author, run once, cannot measure an error rate of a few percent. Before relying on these numbers in
 production, the benchmark needs:
 
-- harder incidents (simultaneous faults, misleading evidence, partial logs, production-scale profiles);
+- harder incidents (simultaneous faults, misleading evidence, partial logs, production-scale profiles).
+  Release 2 adds the first 11 of these; production-scale profiles are still missing;
 - repeated runs to measure variance;
 - cheaper configurations (`--effort medium`, Sonnet 5.5, Haiku 5.5), to find the cheapest one that holds
   these results.
 
-To reproduce:
+To reproduce. The benchmark now has 41 incidents, so this command also runs release 2. Release 1 cost
+$2.74; release 2 is estimated (not measured) at $1.00 to $1.40 more, so the cap leaves room for the
+reserve the spend cap holds back:
 
 ```bash
 export ANTHROPIC_API_KEY=...        # PowerShell: $env:ANTHROPIC_API_KEY="..."
-drc eval --agent claude --workers 2 --max-cost 4.50 --gate eval/gates/claude.yml
+drc eval --agent claude --workers 2 --max-cost 5.50 --gate eval/gates/claude.yml
 ```
 
-The `Evaluate Claude agent` GitHub Actions workflow runs the same thing on demand with a repository secret.
+To run only the 11 release 2 incidents without overwriting the published release 1 results (no gate: with
+one novel incident, a split rate is either 0% or 100%):
+
+```bash
+drc eval --agent claude --workers 2 --max-cost 2.00 --out eval/results/claude-release2.json \
+  --incident INC-H20 --incident INC-H21 --incident INC-H22 --incident INC-H23 --incident INC-H24 \
+  --incident INC-H25 --incident INC-H26 --incident INC-H27 --incident INC-C12 --incident INC-C13 \
+  --incident INC-C14
+```
+
+The `Evaluate Claude agent` GitHub Actions workflow runs the full benchmark on demand with a repository
+secret. Its default spend cap is still $4.50, which is likely to skip a few incidents on 41; raise
+`max_cost` when starting it.
 
 ## What live runs changed
 
@@ -161,8 +187,9 @@ running, stays under the cap.
   clinical platform and the novel split are the main counterweights; scenarios written by someone else
   would be better.
 - **Category granularity.** Some incidents admit two defensible readings (a truncated delivery that also
-  adds a column). Labels pick the cause that blocked the run; `acceptable` lists exist for novel incidents
-  only.
+  adds a column). Labels pick the cause that blocked the run, or on release 2's compound incidents the
+  cause an engineer has to act on ([how release 2 is labeled](benchmark.md#how-the-release-2-incidents-are-labeled));
+  `acceptable` lists exist for novel incidents only.
 - **Verbatim grounding checks existence, not relevance.** A real quote can support the wrong claim. Root
   cause and localization are scored separately for that reason.
 - **Model variance.** A single run of a stochastic agent is one sample. Repeat runs before drawing

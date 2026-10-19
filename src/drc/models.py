@@ -18,7 +18,7 @@ ConsumerImpact = Literal[
     "previous_version_served",  # nothing from this run reached consumers
     "published_with_warning",  # the run published; a non-blocking check warned
     "published_with_quarantine",  # the run published; some rows were held back in quarantine
-    "inconsistent_data_served",  # consumers can currently see data that failed a check
+    "inconsistent_data_served",  # consumers can currently see data that failed a check or is known wrong
     "unknown",
 ]
 

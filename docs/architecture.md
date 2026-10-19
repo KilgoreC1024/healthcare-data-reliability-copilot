@@ -22,7 +22,7 @@ flowchart TB
     R --> AP{"Named human approver<br/>with the catalog role"}
     AP -->|approve| CR["Change request<br/>(a person executes it)"]
     AP -->|approve / reject| L[("Hash-chained<br/>decision log")]
-    E["Evaluation harness<br/>30 labeled incidents"] -.scores.-> I
+    E["Evaluation harness<br/>41 labeled incidents"] -.scores.-> I
     TR["Traces (OpenTelemetry span model)"] -.-> T
     TR -.-> I
 ```

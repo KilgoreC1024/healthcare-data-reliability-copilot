@@ -5,7 +5,7 @@
 Benchmark incident, offline and free:
 
 ```bash
-drc incidents                              # list the 30 benchmark incidents
+drc incidents                              # list the 41 benchmark incidents
 drc investigate INC-H11                    # deterministic playbook
 ```
 

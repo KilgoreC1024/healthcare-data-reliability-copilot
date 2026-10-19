@@ -1,0 +1,628 @@
+{
+ "schema_version": 1,
+ "incident": {
+  "incident_id": "INC-C12",
+  "platform": "clinical_etl",
+  "pipeline": "synthetic_clinical_etl",
+  "run_id": "manual__2026-10-19T17:00:00+00:00",
+  "detected_at": "2026-10-19T17:00:02.010000+00:00",
+  "signal": "run_failed",
+  "failed_stage": "transform",
+  "headline": "DAG synthetic_clinical_etl run manual__2026-10-19T17:00:00+00:00 failed in task 'transform': Patient/pat-003: invalid gender code"
+ },
+ "evidence": {
+  "run": {
+   "run_id": "manual__2026-10-19T17:00:00+00:00",
+   "dag_id": "synthetic_clinical_etl",
+   "state": "failed",
+   "run_type": "manual",
+   "start_date": "2026-10-19T17:00:00+00:00",
+   "end_date": "2026-10-19T17:00:02.010000+00:00",
+   "steps": [
+    {
+     "step": "extract",
+     "status": "success",
+     "try_number": 1,
+     "duration_s": 0.01
+    },
+    {
+     "step": "transform",
+     "status": "failed",
+     "try_number": 1,
+     "duration_s": 0.0
+    },
+    {
+     "step": "quality_gate",
+     "status": "upstream_failed",
+     "try_number": 0,
+     "duration_s": null
+    },
+    {
+     "step": "load",
+     "status": "upstream_failed",
+     "try_number": 0,
+     "duration_s": null
+    },
+    {
+     "step": "audit",
+     "status": "upstream_failed",
+     "try_number": 0,
+     "duration_s": null
+    }
+   ]
+  },
+  "checks": [
+   {
+    "layer": "extract",
+    "source": "synthetic_fhir_bundle",
+    "check_name": "extract.bundle_structure",
+    "status": "pass",
+    "observed": null,
+    "expected": "resourceType must be Bundle, type must be collection, entry must be a non-empty list of resource objects",
+    "message": ""
+   },
+   {
+    "layer": "transform",
+    "source": "synthetic_fhir_bundle",
+    "check_name": "transform.resource_parsing",
+    "status": "fail",
+    "observed": "Patient/pat-003: invalid gender code",
+    "expected": "only Patient, Encounter and Condition are supported (unknown resource types fail); required fields must be non-empty strings; Patient.gender in {male, female, other, unknown}; Patient.birthDate is YYYY-MM-DD; Encounter.period.start is ISO 8601 with a time zone; references must be '<Type>/<id>'",
+    "message": "Patient/pat-003: invalid gender code"
+   },
+   {
+    "layer": "quality_gate",
+    "source": "synthetic_fhir_bundle",
+    "check_name": "quality_gate.validate_tables",
+    "status": "upstream_failed",
+    "observed": null,
+    "expected": "each table non-empty; ids unique per table; every Encounter.subject and Condition.subject references an existing Patient; every Condition.encounter references an existing Encounter; a Condition's patient must equal its Encounter's patient",
+    "message": ""
+   },
+   {
+    "layer": "load",
+    "source": "synthetic_fhir_bundle",
+    "check_name": "load.transactional_refresh",
+    "status": "upstream_failed",
+    "observed": null,
+    "expected": "transactional full refresh of patients, encounters, conditions in SQLite with foreign keys enforced (BEGIN IMMEDIATE)",
+    "message": ""
+   },
+   {
+    "layer": "audit",
+    "source": "synthetic_fhir_bundle",
+    "check_name": "audit.post_load",
+    "status": "upstream_failed",
+    "observed": null,
+    "expected": "post-load row counts must equal the validated counts; zero foreign-key violations; zero cross-patient conditions",
+    "message": ""
+   }
+  ],
+  "check_details": {
+   "synthetic_fhir_bundle:transform.resource_parsing": {
+    "task_id": "transform",
+    "exception_type": "clinical_etl.pipeline.DataQualityError",
+    "message": "Patient/pat-003: invalid gender code",
+    "records_named_in_error": [
+     {
+      "resourceType": "Patient",
+      "id": "pat-003",
+      "birthDate": "1991-07-08",
+      "gender": "female"
+     },
+     {
+      "resourceType": "Patient",
+      "id": "pat-003",
+      "birthDate": "1991-07-08",
+      "gender": "F"
+     }
+    ]
+   }
+  },
+  "schemas": {
+   "synthetic_fhir_bundle": {
+    "release_state": "new source file read by this run",
+    "current_release": "bundle-39a12464",
+    "previous_release": "bundle-f1b83677",
+    "current_header": [
+     "Condition.code.coding[].code",
+     "Condition.code.coding[].display",
+     "Condition.code.coding[].system",
+     "Condition.encounter.reference",
+     "Condition.id",
+     "Condition.resourceType",
+     "Condition.subject.reference",
+     "Encounter.id",
+     "Encounter.period.start",
+     "Encounter.resourceType",
+     "Encounter.status",
+     "Encounter.subject.reference",
+     "Patient.birthDate",
+     "Patient.gender",
+     "Patient.id",
+     "Patient.resourceType"
+    ],
+    "previous_header": [
+     "Condition.code.coding[].code",
+     "Condition.code.coding[].display",
+     "Condition.code.coding[].system",
+     "Condition.encounter.reference",
+     "Condition.id",
+     "Condition.resourceType",
+     "Condition.subject.reference",
+     "Encounter.id",
+     "Encounter.period.start",
+     "Encounter.resourceType",
+     "Encounter.status",
+     "Encounter.subject.reference",
+     "Patient.birthDate",
+     "Patient.gender",
+     "Patient.id",
+     "Patient.resourceType"
+    ],
+    "current_file": {
+     "present": true,
+     "bytes": 6257,
+     "sha256": "39a124642d76524f",
+     "resourceType": "Bundle",
+     "type": "collection",
+     "entries": 18
+    },
+    "previous_file": {
+     "present": true,
+     "bytes": 6091,
+     "sha256": "f1b83677454fd901",
+     "resourceType": "Bundle",
+     "type": "collection",
+     "entries": 17
+    }
+   }
+  },
+  "profiles": {
+   "synthetic_fhir_bundle": {
+    "current_release": "bundle-39a12464",
+    "current": {
+     "_rows": 18,
+     "_resource_types": {
+      "Patient": 5,
+      "Encounter": 6,
+      "Condition": 7
+     },
+     "Condition.code.coding[].code": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 6,
+      "values": {
+       "I10": 2,
+       "E78.5": 1,
+       "J45.909": 1,
+       "E11.9": 1,
+       "K21.9": 1,
+       "M54.50": 1
+      }
+     },
+     "Condition.code.coding[].display": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 6,
+      "values": {
+       "Essential hypertension": 2,
+       "Hyperlipidemia, unspecified": 1,
+       "Unspecified asthma, uncomplicated": 1,
+       "Type 2 diabetes without complications": 1,
+       "Gastro-esophageal reflux disease": 1,
+       "Low back pain, unspecified": 1
+      }
+     },
+     "Condition.code.coding[].system": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 1,
+      "values": {
+       "http://hl7.org/fhir/sid/icd-10-cm": 7
+      }
+     },
+     "Condition.encounter.reference": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "Encounter/enc-001": 2,
+       "Encounter/enc-002": 1,
+       "Encounter/enc-003": 1,
+       "Encounter/enc-004": 1,
+       "Encounter/enc-005": 1,
+       "Encounter/enc-006": 1
+      },
+      "unresolved_references": 0
+     },
+     "Condition.id": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 7,
+      "values": {
+       "con-001": 1,
+       "con-002": 1,
+       "con-003": 1,
+       "con-004": 1,
+       "con-005": 1,
+       "con-006": 1,
+       "con-007": 1
+      }
+     },
+     "Condition.resourceType": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Condition": 7
+      }
+     },
+     "Condition.subject.reference": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "Patient/pat-001": 3,
+       "Patient/pat-002": 2,
+       "Patient/pat-003": 1,
+       "Patient/pat-004": 1
+      },
+      "unresolved_references": 0
+     },
+     "Encounter.id": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "enc-001": 1,
+       "enc-002": 1,
+       "enc-003": 1,
+       "enc-004": 1,
+       "enc-005": 1,
+       "enc-006": 1
+      }
+     },
+     "Encounter.period.start": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "2026-01-15T09:00:00Z": 1,
+       "2026-02-05T15:00:00Z": 1,
+       "2026-01-19T10:15:00Z": 1,
+       "2026-03-11T12:45:00Z": 1,
+       "2026-02-28T08:30:00Z": 1,
+       "2026-04-02T13:20:00Z": 1
+      },
+      "without_timezone": 0
+     },
+     "Encounter.resourceType": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Encounter": 6
+      }
+     },
+     "Encounter.status": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "finished": 6
+      }
+     },
+     "Encounter.subject.reference": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "Patient/pat-001": 2,
+       "Patient/pat-002": 2,
+       "Patient/pat-003": 1,
+       "Patient/pat-004": 1
+      },
+      "unresolved_references": 0
+     },
+     "Patient.birthDate": {
+      "present": true,
+      "count": 5,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "1984-03-12": 1,
+       "1976-11-20": 1,
+       "1991-07-08": 2,
+       "1968-01-27": 1
+      }
+     },
+     "Patient.gender": {
+      "present": true,
+      "count": 5,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "female": 2,
+       "male": 1,
+       "other": 1,
+       "F": 1
+      }
+     },
+     "Patient.id": {
+      "present": true,
+      "count": 5,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "pat-001": 1,
+       "pat-002": 1,
+       "pat-003": 2,
+       "pat-004": 1
+      }
+     },
+     "Patient.resourceType": {
+      "present": true,
+      "count": 5,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Patient": 5
+      }
+     }
+    },
+    "previous": {
+     "_rows": 17,
+     "_resource_types": {
+      "Patient": 4,
+      "Encounter": 6,
+      "Condition": 7
+     },
+     "Condition.code.coding[].code": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 6,
+      "values": {
+       "I10": 2,
+       "E78.5": 1,
+       "J45.909": 1,
+       "E11.9": 1,
+       "K21.9": 1,
+       "M54.50": 1
+      }
+     },
+     "Condition.code.coding[].display": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 6,
+      "values": {
+       "Essential hypertension": 2,
+       "Hyperlipidemia, unspecified": 1,
+       "Unspecified asthma, uncomplicated": 1,
+       "Type 2 diabetes without complications": 1,
+       "Gastro-esophageal reflux disease": 1,
+       "Low back pain, unspecified": 1
+      }
+     },
+     "Condition.code.coding[].system": {
+      "present": true,
+      "count": 7,
+      "missing": null,
+      "distinct": 1,
+      "values": {
+       "http://hl7.org/fhir/sid/icd-10-cm": 7
+      }
+     },
+     "Condition.encounter.reference": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "Encounter/enc-001": 2,
+       "Encounter/enc-002": 1,
+       "Encounter/enc-003": 1,
+       "Encounter/enc-004": 1,
+       "Encounter/enc-005": 1,
+       "Encounter/enc-006": 1
+      },
+      "unresolved_references": 0
+     },
+     "Condition.id": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 7,
+      "values": {
+       "con-001": 1,
+       "con-002": 1,
+       "con-003": 1,
+       "con-004": 1,
+       "con-005": 1,
+       "con-006": 1,
+       "con-007": 1
+      }
+     },
+     "Condition.resourceType": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Condition": 7
+      }
+     },
+     "Condition.subject.reference": {
+      "present": true,
+      "count": 7,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "Patient/pat-001": 3,
+       "Patient/pat-002": 2,
+       "Patient/pat-003": 1,
+       "Patient/pat-004": 1
+      },
+      "unresolved_references": 0
+     },
+     "Encounter.id": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "enc-001": 1,
+       "enc-002": 1,
+       "enc-003": 1,
+       "enc-004": 1,
+       "enc-005": 1,
+       "enc-006": 1
+      }
+     },
+     "Encounter.period.start": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 6,
+      "values": {
+       "2026-01-15T09:00:00Z": 1,
+       "2026-02-05T15:00:00Z": 1,
+       "2026-01-19T10:15:00Z": 1,
+       "2026-03-11T12:45:00Z": 1,
+       "2026-02-28T08:30:00Z": 1,
+       "2026-04-02T13:20:00Z": 1
+      },
+      "without_timezone": 0
+     },
+     "Encounter.resourceType": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Encounter": 6
+      }
+     },
+     "Encounter.status": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "finished": 6
+      }
+     },
+     "Encounter.subject.reference": {
+      "present": true,
+      "count": 6,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "Patient/pat-001": 2,
+       "Patient/pat-002": 2,
+       "Patient/pat-003": 1,
+       "Patient/pat-004": 1
+      },
+      "unresolved_references": 0
+     },
+     "Patient.birthDate": {
+      "present": true,
+      "count": 4,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "1984-03-12": 1,
+       "1976-11-20": 1,
+       "1991-07-08": 1,
+       "1968-01-27": 1
+      }
+     },
+     "Patient.gender": {
+      "present": true,
+      "count": 4,
+      "missing": 0,
+      "distinct": 3,
+      "values": {
+       "female": 2,
+       "male": 1,
+       "other": 1
+      }
+     },
+     "Patient.id": {
+      "present": true,
+      "count": 4,
+      "missing": 0,
+      "distinct": 4,
+      "values": {
+       "pat-001": 1,
+       "pat-002": 1,
+       "pat-003": 1,
+       "pat-004": 1
+      }
+     },
+     "Patient.resourceType": {
+      "present": true,
+      "count": 4,
+      "missing": 0,
+      "distinct": 1,
+      "values": {
+       "Patient": 4
+      }
+     }
+    },
+    "previous_release": "bundle-f1b83677"
+   }
+  },
+  "releases": {
+   "synthetic_fhir_bundle": [
+    {
+     "release_id": "bundle-f1b83677",
+     "run_id": "manual__2026-10-18T17:00:00+00:00",
+     "state": "success",
+     "loaded_row_counts": {
+      "patients": 4,
+      "encounters": 6,
+      "conditions": 7
+     },
+     "end_date": "2026-10-18T17:00:05.030000+00:00"
+    },
+    {
+     "release_id": "bundle-39a12464",
+     "run_id": "manual__2026-10-19T17:00:00+00:00",
+     "state": "failed",
+     "loaded_row_counts": null,
+     "end_date": "2026-10-19T17:00:02.010000+00:00"
+    }
+   ]
+  },
+  "publish_state": {
+   "target": "runtime/clinical_demo.sqlite",
+   "exists": true,
+   "row_counts": {
+    "patients": 4,
+    "encounters": 6,
+    "conditions": 7
+   },
+   "last_successful_run_id": "manual__2026-10-18T17:00:00+00:00",
+   "this_run_loaded": false,
+   "load_semantics": "load is a transactional full refresh (BEGIN IMMEDIATE ... COMMIT); if load or an earlier task fails, the previous tables remain unchanged"
+  },
+  "logs": {
+   "transform": "[2026-10-19T17:00:01.010+0000] INFO - Executing <Task(_PythonDecoratedOperator): transform> on manual__2026-10-19T17:00:00+00:00, try 1 of 1\n[2026-10-19T17:00:01.010+0000] ERROR - Task failed with exception\nTraceback (most recent call last):\n  File \"/opt/airflow/demo/src/clinical_etl/pipeline.py\", line 104, in transform_resources\n    raise DataQualityError(f\"Patient/{ident}: invalid gender code\")\nclinical_etl.pipeline.DataQualityError: Patient/pat-003: invalid gender code\n[2026-10-19T17:00:01.010+0000] INFO - Marking task as FAILED. dag_id=synthetic_clinical_etl, task_id=transform, run_id=manual__2026-10-19T17:00:00+00:00"
+  }
+ }
+}

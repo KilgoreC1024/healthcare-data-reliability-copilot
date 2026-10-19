@@ -199,7 +199,10 @@ def collect(
         detected_at=run["end_date"],
         signal="run_failed",
         failed_stage=stage,
-        headline=f"DAG synthetic_clinical_etl run {run['run_id']} failed in task '{stage}': {error}"[:1000],
+        headline=(
+            f"DAG synthetic_clinical_etl run {run['run_id']} failed in task '{stage}'"
+            + (f": {error}" if error else "")
+        )[:1000],
     )
 
     current, current_info = read_bundle(source_path)

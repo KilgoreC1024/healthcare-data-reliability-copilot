@@ -4,7 +4,9 @@ Requires a checkout of https://github.com/KilgoreC1024/healthcare-cost-utilizati
 the same environment (`pip install -e <checkout>[transform]`). The 13 fault scenarios come straight from
 `hcip.chaos.SCENARIOS`; the lab adds operational and adversarial scenarios that hcip's own fault suite
 does not cover (a missing source file, a killed transformation engine, a stalled run, and prompt
-injection hidden in the data).
+injection hidden in the data), and harder ones built to separate strong investigators from weak ones:
+faults in both sources at once, a real fault behind a louder harmless change, decoy shifts, lost run
+artifacts, legitimate upstream changes that look like corruption, and near misses of the simple cases.
 """
 
 from __future__ import annotations
@@ -43,6 +45,10 @@ class LabScenario:
     source: str | None = None
     mutate: Callable | None = None
     mode: str = "fault"  # fault | source_missing | engine_killed | stalled
+    # A second source delivered with its own fault in the same run.
+    also: tuple[tuple[str, Callable], ...] = ()
+    # Applied to the data directory after the run and before collection (e.g. lost run artifacts).
+    after_run: Callable[[Path], None] | None = None
 
 
 def _set_first_values(column: str, value: str, n: int):
@@ -59,6 +65,255 @@ def _set_first_values(column: str, value: str, n: int):
         return header, rows
 
     return mutate
+
+
+# ---- building blocks for the harder scenarios ---------------------------------------------------------
+def _compose(*mutations: Callable):
+    def mutate(header, rows):
+        for m in mutations:
+            header, rows = m(header, rows)
+        return header, rows
+
+    return mutate
+
+
+def _number(value: str) -> float | None:
+    try:
+        return float(value)
+    except ValueError:
+        return None  # a sentinel ("*", "NA") or an empty cell
+
+
+def _scaled(value: str, factor: float, decimals: int | None = None) -> str:
+    """Scale a numeric cell, keeping its integer or decimal form; sentinels pass through."""
+    v = _number(value)
+    if v is None:
+        return value
+    if "." not in value and decimals is None:
+        return str(round(v * factor))
+    places = decimals if decimals is not None else max(2, len(value.split(".")[1]))
+    return f"{v * factor:.{places}f}".rstrip("0").rstrip(".")
+
+
+def _scale_columns(columns: Callable[[str], bool], factor: float, decimals: int | None = None):
+    def mutate(header, rows):
+        targets = [i for i, h in enumerate(header) if columns(h)]
+        out = []
+        for r in rows:
+            r = list(r)
+            for i in targets:
+                r[i] = _scaled(r[i], factor, decimals)
+            out.append(r)
+        return header, out
+
+    return mutate
+
+
+def _derived_columns(new: dict[str, tuple[str, float]]):
+    """Append columns derived from existing ones (name -> (base column, factor)), as a real new measure would look."""
+
+    def mutate(header, rows):
+        assert not set(new) & set(header), "new columns must not exist yet"
+        base = [(header.index(col), factor) for col, factor in new.values()]
+        return header + list(new), [r + [_scaled(r[i], f) for i, f in base] for r in rows]
+
+    return mutate
+
+
+def _percent_strings(column: str, n: int):
+    """A few small counties publish a 0-1 rate as a percentage string ('4.5%')."""
+
+    def mutate(header, rows):
+        rows = [list(r) for r in rows]
+        c, benes, lvl = header.index(column), header.index("BENES_TOTAL_CNT"), header.index("BENE_GEO_LVL")
+        candidates = [
+            i
+            for i, r in enumerate(rows)
+            if r[lvl] == "County" and r[benes].isdigit() and (_number(r[c]) or 0) > 0
+        ]
+        for i in sorted(candidates, key=lambda i: int(rows[i][benes]))[:n]:
+            rows[i][c] = f"{float(rows[i][c]) * 100:.1f}%"
+        return header, rows
+
+    return mutate
+
+
+def _redelivered_under_new_names(state: str, year: str, suffix: str):
+    """One state-year of county rows appended a second time, under a new naming style for BENE_GEO_DESC."""
+
+    def mutate(header, rows):
+        lvl, desc, yr = header.index("BENE_GEO_LVL"), header.index("BENE_GEO_DESC"), header.index("YEAR")
+        copies = []
+        for r in rows:
+            if r[lvl] == "County" and r[yr] == year and r[desc].startswith(f"{state}-"):
+                copy = list(r)
+                copy[desc] = r[desc] + suffix
+                copies.append(copy)
+        return header, [list(r) for r in rows] + copies
+
+    return mutate
+
+
+def _replace_everywhere(old: str, new: str):
+    def mutate(header, rows):
+        return header, [[new if v == old else v for v in r] for r in rows]
+
+    return mutate
+
+
+# New PLACES measures, each modeled on an existing measure's county rows (template, value scale).
+NEW_PLACES_MEASURES = [
+    (
+        "RISKBEH",
+        "ECIGARETTE",
+        "Current e-cigarette use among adults",
+        "Current E-cigarette Use",
+        "CSMOKING",
+        0.45,
+    ),
+    ("RISKBEH", "HEAVYDRINK", "Heavy drinking among adults", "Heavy Drinking", "BINGE", 0.38),
+    ("HLTHOUT", "KIDNEY", "Chronic kidney disease among adults", "Chronic Kidney Disease", "CHD", 0.55),
+    ("HLTHOUT", "PREDIABETES", "Prediabetes among adults", "Prediabetes", "DIABETES", 1.15),
+    (
+        "PREVENT",
+        "FLUSHOT",
+        "Influenza vaccination in the past year among adults",
+        "Flu Vaccination",
+        "CHECKUP",
+        0.55,
+    ),
+    ("PREVENT", "HIVTEST", "Ever tested for HIV among adults", "HIV Testing", "CHOLSCREEN", 0.45),
+    (
+        "HLTHSTAT",
+        "SUBJCOG",
+        "Subjective cognitive decline among adults",
+        "Subjective Cognitive Decline",
+        "MHLTH",
+        0.7,
+    ),
+    (
+        "SOCLNEED",
+        "COSTBARRIER",
+        "Could not see a doctor because of cost among adults",
+        "Cost Barrier to Care",
+        "ACCESS2",
+        0.9,
+    ),
+    (
+        "SOCLNEED",
+        "JOBLOSS",
+        "Lost employment or work hours in the past year among adults",
+        "Employment Loss",
+        "FOODSTAMP",
+        0.6,
+    ),
+    (
+        "DISABLT",
+        "COMMUNIC",
+        "Communication disability among adults",
+        "Communication Disability",
+        "HEARING",
+        0.4,
+    ),
+]
+
+
+def _add_places_measures(header, rows):
+    """A new PLACES release adds measures: complete, well-formed rows for every county already reported."""
+    ix = {h: i for i, h in enumerate(header)}
+    out = [list(r) for r in rows]
+    for category_id, measure_id, measure, short, template, scale in NEW_PLACES_MEASURES:
+        for r in rows:
+            if r[ix["MeasureId"]] != template:
+                continue
+            new = list(r)
+            new[ix["CategoryID"]], new[ix["MeasureId"]] = category_id, measure_id
+            new[ix["Measure"]], new[ix["Short_Question_Text"]] = measure, short
+            new[ix["Category"]] = next(x[ix["Category"]] for x in rows if x[ix["CategoryID"]] == category_id)
+            for col in ("Data_Value", "Low_Confidence_Limit", "High_Confidence_Limit"):
+                v = _number(r[ix[col]])
+                new[ix[col]] = r[ix[col]] if v is None else f"{v * scale:.1f}"
+            out.append(new)
+    return header, out
+
+
+def _remove_run_artifacts(data: Path) -> None:
+    """The worker's local run directory (dbt logs, compiled tests, candidate database) is gone; the
+    central run ledger and the landing zone survive."""
+    ledger = collector.Ledger(data / "warehouse" / "ops.duckdb")
+    shutil.rmtree(data / "warehouse" / "runs" / ledger.run(None)["run_id"])
+
+
+def _is_standardized_payment(column: str) -> bool:
+    # Standardized amounts and per-capita values; shares of the total (_PCT) do not move with a rescale.
+    return "STDZD_PYMT" in column and not column.endswith("_PCT")
+
+
+def harder_scenarios() -> list[LabScenario]:
+    from hcip import chaos
+
+    telehealth = _derived_columns(
+        {
+            "BENES_TELEHEALTH_PCT": ("BENES_OP_PCT", 0.31),
+            "TELEHEALTH_EVNTS_PER_1000_BENES": ("EM_EVNTS_PER_1000_BENES", 0.12),
+            "TELEHEALTH_MDCR_PYMT_AMT": ("EM_MDCR_PYMT_AMT", 0.04),
+            "TELEHEALTH_MDCR_PYMT_PC": ("EM_MDCR_PYMT_PC", 0.04),
+        }
+    )
+    return [
+        # CMS has a tolerable fault (two rows), CDC an intolerable one; only the CDC fault blocks.
+        LabScenario(
+            "dual_source_faults",
+            "INC-H20",
+            CMS,
+            _percent_strings("MA_PRTCPTN_RATE", 2),
+            also=((CDC, chaos.swap_confidence_limits(40)),),
+        ),
+        # The alert is a harmless new set of columns; the damage is a silent rate-base change no check covers.
+        LabScenario(
+            "silent_rate_base_change_behind_new_columns",
+            "INC-H21",
+            CMS,
+            _compose(telehealth, _scale_columns(lambda c: c == "ER_VISITS_PER_1000_BENES", 0.001, 6)),
+        ),
+        # A legitimate re-standardization moves eight payment columns; a beneficiary count is what broke.
+        LabScenario(
+            "reconciliation_break_with_restatement_decoy",
+            "INC-H22",
+            CMS,
+            _compose(
+                _scale_columns(_is_standardized_payment, 0.94),
+                chaos.inflate_county("42003", "2024", "BENES_TOTAL_CNT", 2),
+            ),
+        ),
+        # A unit change by a factor that is not a power of ten.
+        LabScenario(
+            "per_capita_republished_monthly",
+            "INC-H23",
+            CMS,
+            _scale_columns(lambda c: c == "TOT_MDCR_PYMT_PC", 1 / 12, 2),
+        ),
+        # Duplicates that pass the contract's grain check, with the audit's failing rows and logs lost.
+        LabScenario(
+            "renamed_duplicates_without_run_artifacts",
+            "INC-H24",
+            CMS,
+            _redelivered_under_new_names("PA", "2024", " County"),
+            after_run=_remove_run_artifacts,
+        ),
+        # A legitimate release that adds measures trips the volume check meant for truncated files.
+        LabScenario("upstream_adds_measures", "INC-H25", CDC, _add_places_measures),
+        # The suppression marker changes from '*' to '<11'; how much is suppressed does not change.
+        LabScenario("suppression_marker_changed", "INC-H26", CMS, _replace_everywhere("*", "<11")),
+        # The engine is killed while a harmless new column happens to arrive in the same delivery.
+        LabScenario(
+            "engine_killed_with_new_column",
+            "INC-H27",
+            CMS,
+            _derived_columns({"BENES_ESRD_PCT": ("BENE_DUAL_PCT", 0.03)}),
+            mode="engine_killed",
+        ),
+    ]
 
 
 def scenarios() -> list[LabScenario]:
@@ -79,7 +334,7 @@ def scenarios() -> list[LabScenario]:
             "injection_in_values", "INC-H19", CDC, _set_first_values("Data_Value", INJECTED_VALUE, 2)
         ),
     ]
-    return out
+    return out + harder_scenarios()
 
 
 @contextmanager
@@ -116,14 +371,15 @@ def run_scenario(scenario: LabScenario, baseline: Path, work: Path, hcip_home: P
     shutil.copytree(baseline, data)
     incoming = work / "incoming" / scenario.incident_id
     incoming.mkdir(parents=True, exist_ok=True)
-    source = scenario.source
-    fixture = hcip_home / chaos.FIXTURES[source]
-    delivery = incoming / f"{source}.csv"
-    if scenario.mutate is not None:
-        chaos._write(delivery, scenario.mutate(*chaos._read(fixture)))
-    elif scenario.mode != "source_missing":
-        shutil.copyfile(fixture, delivery)  # a clean new release; the fault is not in the data
-    overrides = {source: {"path": str(delivery), "release_id": NEUTRAL_RELEASE[source]}}
+    overrides = {}
+    for source, mutate in ((scenario.source, scenario.mutate), *scenario.also):
+        fixture = hcip_home / chaos.FIXTURES[source]
+        delivery = incoming / f"{source}.csv"
+        if mutate is not None:
+            chaos._write(delivery, mutate(*chaos._read(fixture)))
+        elif scenario.mode != "source_missing":
+            shutil.copyfile(fixture, delivery)  # a clean new release; the fault is not in the data
+        overrides[source] = {"path": str(delivery), "release_id": NEUTRAL_RELEASE[source]}
 
     if scenario.mode == "stalled":
         # Land, validate and stage every source, then stop as if the worker host died before the
@@ -136,6 +392,8 @@ def run_scenario(scenario: LabScenario, baseline: Path, work: Path, hcip_home: P
         # Blocked or failed runs are the point of the exercise; the run ledger records them.
         with _env(**env), contextlib.suppress(Exception):
             pipeline.run("fixture", str(data), with_report=False, trigger="scheduled", overrides=overrides)
+    if scenario.after_run is not None:
+        scenario.after_run(data)
 
     bundle, _ = collector.collect(data, hcip_home, incident_id=scenario.incident_id)
     return scrub(bundle, data, work, hcip_home, banned=[scenario.key])

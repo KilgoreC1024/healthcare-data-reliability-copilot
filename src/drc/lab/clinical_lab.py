@@ -87,6 +87,47 @@ def _injection(b):
     encounter["subject"]["reference"] = "Patient/pat-404"
 
 
+def _legacy_twin(b):
+    """A second copy of an existing patient, from a system that still uses single-letter gender codes.
+    The pipeline stops on the code before it gets to the duplicate id."""
+    twin = copy.deepcopy(_resource(b, "pat-003"))
+    twin["gender"] = "F"
+    b["entry"].append({"resource": twin})
+
+
+def _orphan_condition(b):
+    _resource(b, "con-005")["encounter"]["reference"] = "Encounter/enc-007"
+
+
+def _versioned_references(b):
+    """The upstream FHIR server starts emitting version-specific references (Patient/pat-001/_history/2),
+    which are valid FHIR; every referenced resource is still in the bundle."""
+    for entry in b["entry"]:
+        resource = entry["resource"]
+        for field_name in ("subject", "encounter"):
+            ref = resource.get(field_name)
+            if isinstance(ref, dict) and "reference" in ref:
+                version = int(ref["reference"].rsplit("-", 1)[1]) % 3 + 1
+                ref["reference"] = f"{ref['reference']}/_history/{version}"
+
+
+def _task_log_unavailable(run: dict[str, Any]) -> None:
+    """The failed task's log can no longer be served (its worker was replaced), and Airflow keeps no
+    exception text outside the log: the run record shows only that the task failed."""
+    for ti in run["task_instances"]:
+        if ti["state"] == "failed":
+            ti.pop("exception", None)
+            ti.pop("exception_type", None)
+            url = (
+                "http://airflow-worker-1.airflow-worker:8793/log/"
+                f"dag_id={DAG_ID}/run_id={run['run_id']}/task_id={ti['task_id']}/attempt={ti['try_number']}.log"
+            )
+            ti["log"] = (
+                f"*** Could not read served logs: Client error '404 NOT FOUND' for url '{url}'\n"
+                "For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+            )
+
+
 @contextmanager
 def _locked(db: Path) -> Iterator[None]:
     """Another process holds an exclusive lock on the SQLite target for the whole load task."""
@@ -114,6 +155,8 @@ class LabScenario:
     missing_source: bool = False
     around_load: Callable[[Path], Any] | None = None
     after_load: Callable[[Path], None] | None = None
+    # Applied to the recorded DAG run before collection (what the run record keeps, not what happened).
+    after_run: Callable[[dict[str, Any]], None] | None = None
     tags: tuple[str, ...] = field(default_factory=tuple)
 
 
@@ -129,6 +172,13 @@ SCENARIOS = [
     LabScenario("rows_deleted_out_of_band", "INC-C09", after_load=_delete_out_of_band),
     LabScenario("injection_in_encounter_status", "INC-C10", _injection),
     LabScenario("source_file_missing", "INC-C11", missing_source=True),
+    # Harder cases: the first error raised is a symptom, the evidence is partial, or a legitimate change
+    # produces exactly the error an orphan reference does.
+    LabScenario("legacy_duplicate_patient", "INC-C12", _legacy_twin),
+    LabScenario(
+        "orphan_condition_without_task_log", "INC-C13", _orphan_condition, after_run=_task_log_unavailable
+    ),
+    LabScenario("versioned_references", "INC-C14", _versioned_references),
 ]
 
 
@@ -288,6 +338,8 @@ def run_scenario(scenario: LabScenario, original: Path, work: Path, index: int) 
 
     when = day + timedelta(days=1)
     run = run_dag(source, db, f"manual__{when.isoformat()}", Clock(when), scenario)
+    if scenario.after_run:
+        scenario.after_run(run)
     bundle = collector.collect(
         run, [baseline], source, archive / "synthetic_fhir_bundle.previous.json", db, scenario.incident_id
     )

@@ -162,6 +162,90 @@ incidents:
     impact: published_with_quarantine
     actions: [review_quarantined_rows, request_corrected_delivery]
     forbidden: [restore_previous_version]
+  # ---- hcip: harder incidents (release 2): compound faults, decoys, partial evidence, near misses ----------
+  INC-H20:
+    scenario: dual_source_faults
+    split: known
+    category: values.cross_field_inconsistency
+    source: cdc_places_county
+    columns: [Low_Confidence_Limit, High_Confidence_Limit]
+    impact: previous_version_served
+    actions: [request_corrected_delivery, correct_source_records, review_quarantined_rows]
+    note: Both sources arrive with a fault. Two CMS rows carry MA_PRTCPTN_RATE as percentage strings like
+      '4.5%' (within the error budget, so the contract only warns); 40 PLACES rows have inverted confidence
+      intervals, which pushes CDC's quarantine rate over budget and blocks the audit. The block is the CDC
+      fault.
+  INC-H21:
+    scenario: silent_rate_base_change_behind_new_columns
+    split: known
+    category: semantic.unit_change
+    source: cms_geo_variation
+    columns: [ER_VISITS_PER_1000_BENES, er_visits_per_1000]
+    impact: inconsistent_data_served
+    actions: [restore_previous_version, request_corrected_delivery, update_transformation, amend_data_contract]
+    note: The alert is four new telehealth columns (harmless additive drift). The same delivery republished
+      ED visits per 1,000 beneficiaries per beneficiary (values 1/1000 of before). No check covers that
+      column, so the run published and consumers see it. Diagnosing only the new columns misses the incident.
+  INC-H22:
+    scenario: reconciliation_break_with_restatement_decoy
+    split: known
+    category: semantic.aggregate_reconciliation_break
+    source: cms_geo_variation
+    columns: [BENES_TOTAL_CNT, benes_total]
+    impact: previous_version_served
+    actions: [request_corrected_delivery]
+    note: Every standardized payment amount and per-capita value is 6% lower, consistently (a
+      re-standardization no check reads, and the largest change in the profile). The audit failure is
+      Allegheny County's 2024 beneficiary count, doubled.
+  INC-H23:
+    scenario: per_capita_republished_monthly
+    split: known
+    category: semantic.unit_change
+    source: cms_geo_variation
+    columns: [TOT_MDCR_PYMT_PC, payment_per_capita]
+    impact: previous_version_served
+    actions: [request_corrected_delivery, amend_data_contract, update_transformation]
+    note: Per-capita spending republished per beneficiary-month, a factor of 12 rather than a power of ten.
+  INC-H24:
+    scenario: renamed_duplicates_without_run_artifacts
+    split: known
+    category: integrity.duplicate_records
+    source: cms_geo_variation
+    impact: previous_version_served
+    actions: [request_corrected_delivery]
+    note: Pennsylvania's 2024 county rows arrive a second time, named 'PA-Adams County' and so on. The
+      contract's grain includes the name, so it passes; dbt keys on FIPS and quarantines the 68 duplicates,
+      over budget. The worker's run directory is gone, so there are no failing rows, compiled SQL or dbt log,
+      only the run ledger and the landed file.
+  INC-H25:
+    scenario: upstream_adds_measures
+    split: known
+    category: schema.additive_drift
+    source: cdc_places_county
+    impact: previous_version_served
+    actions: [amend_data_contract, update_transformation]
+    forbidden: [request_corrected_delivery]
+    note: A legitimate PLACES release adds ten measures (21.6% more rows, every new row well formed), which
+      trips the row-change check meant for truncated files. The fix is a contract change; asking the
+      publisher to correct a valid release is the wrong action.
+  INC-H26:
+    scenario: suppression_marker_changed
+    split: known
+    category: values.type_format_drift
+    source: cms_geo_variation
+    impact: previous_version_served
+    actions: [amend_data_contract, update_transformation, request_corrected_delivery]
+    note: CMS writes '<11' where it wrote '*'. The same cells are suppressed (the '*' rate falls to zero),
+      but '<11' is not a declared sentinel, so the rows fail type rules. Not a suppression policy change.
+  INC-H27:
+    scenario: engine_killed_with_new_column
+    split: novel
+    expected: abstain
+    acceptable: [infra.compute_failure]
+    impact: previous_version_served
+    actions: [escalate_to_platform_oncall, rerun_pipeline]
+    note: dbt is killed (exit 137, no output) in a run whose CMS delivery also adds one column. The column
+      is a coincidence; nothing in the evidence says why the engine died.
   # ---- clinical ETL: a second platform, with no baseline rules (transfer test) -------------------------------
   INC-C01:
     scenario: orphan_encounter_reference
@@ -249,3 +333,37 @@ incidents:
     source: synthetic_fhir_bundle
     impact: previous_version_served
     actions: [escalate_to_platform_oncall, rerun_pipeline, request_corrected_delivery]
+  # ---- clinical ETL: harder incidents (release 2) --------------------------------------------------------
+  INC-C12:
+    scenario: legacy_duplicate_patient
+    split: known
+    category: integrity.duplicate_records
+    source: synthetic_fhir_bundle
+    columns: [Patient.id, patients.id, pat-003]
+    impact: previous_version_served
+    actions: [correct_source_records, request_corrected_delivery]
+    note: The alert is identical to INC-C05's ("Patient/pat-003 invalid gender code"), but the record with
+      code 'F' is a second copy of pat-003 appended from a legacy system. Fixing the code would only move
+      the failure to the duplicate-id check.
+  INC-C13:
+    scenario: orphan_condition_without_task_log
+    split: known
+    category: referential.orphan_reference
+    source: synthetic_fhir_bundle
+    columns: [encounter.reference, encounter_id]
+    impact: previous_version_served
+    actions: [correct_source_records, request_corrected_delivery]
+    note: The quality gate failed, but its log cannot be served (a 404 from the worker's log server) and no
+      exception text was kept. The bundle profile shows the cause, a Condition that references
+      Encounter/enc-007, which does not exist. The log server's 404 is not the source being unavailable.
+  INC-C14:
+    scenario: versioned_references
+    split: known
+    category: values.type_format_drift
+    source: synthetic_fhir_bundle
+    columns: [subject.reference, encounter.reference, patient_id, encounter_id]
+    impact: previous_version_served
+    actions: [update_transformation, amend_data_contract]
+    note: Same error as an orphan reference ("Encounter/enc-001 missing patient"), but every referenced
+      resource exists. The upstream switched to version-specific references (Patient/pat-001/_history/2),
+      which are valid FHIR; the parser has to handle them, and nothing in the source needs correcting.
