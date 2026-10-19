@@ -1,0 +1,1822 @@
+{
+ "schema_version": 1,
+ "incident": {
+  "incident_id": "INC-H13",
+  "platform": "hcip",
+  "pipeline": "hcip_pipeline",
+  "run_id": "20261019T003738Z-97d131",
+  "detected_at": "2026-10-19T00:37:49.496535",
+  "signal": "published_with_warnings",
+  "failed_stage": null,
+  "headline": "Run published with new warnings: warn_rows_in_quarantine"
+ },
+ "evidence": {
+  "run": {
+   "run_id": "20261019T003738Z-97d131",
+   "profile": "fixture",
+   "trigger": "scheduled",
+   "started_at": "2026-10-19T00:37:38.882940",
+   "finished_at": "2026-10-19T00:37:49.496535",
+   "status": "published",
+   "message": "",
+   "previous_published_run": "20261019T003627Z-5de732",
+   "warnings_on_previous_published_run": [
+    "assert_analysis_cohort_is_substantial"
+   ],
+   "steps": [
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "land",
+     "source": "cms_geo_variation",
+     "started_at": "2026-10-19T00:37:38.940665",
+     "finished_at": "2026-10-19T00:37:39.021588",
+     "duration_s": 0.081,
+     "status": "success",
+     "detail": {
+      "release_id": "fixture-2026-05-15",
+      "skipped": true,
+      "bytes": 905369
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "validate",
+     "source": "cms_geo_variation",
+     "started_at": "2026-10-19T00:37:39.088242",
+     "finished_at": "2026-10-19T00:37:39.398439",
+     "duration_s": 0.309,
+     "status": "success",
+     "detail": {
+      "contract_status": "pass",
+      "rows": 583
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "bronze",
+     "source": "cms_geo_variation",
+     "started_at": "2026-10-19T00:37:39.442377",
+     "finished_at": "2026-10-19T00:37:39.457739",
+     "duration_s": 0.015,
+     "status": "success",
+     "detail": {
+      "rows": 583,
+      "skipped": true,
+      "bytes": 465036
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "land",
+     "source": "cdc_places_county",
+     "started_at": "2026-10-19T00:37:39.507488",
+     "finished_at": "2026-10-19T00:37:39.628737",
+     "duration_s": 0.121,
+     "status": "success",
+     "detail": {
+      "release_id": "2026-10-01",
+      "skipped": false,
+      "bytes": 1173342
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "validate",
+     "source": "cdc_places_county",
+     "started_at": "2026-10-19T00:37:39.701233",
+     "finished_at": "2026-10-19T00:37:39.966319",
+     "duration_s": 0.265,
+     "status": "success",
+     "detail": {
+      "contract_status": "pass",
+      "rows": 4910
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "bronze",
+     "source": "cdc_places_county",
+     "started_at": "2026-10-19T00:37:40.015196",
+     "finished_at": "2026-10-19T00:37:40.081305",
+     "duration_s": 0.066,
+     "status": "success",
+     "detail": {
+      "rows": 4910,
+      "skipped": false,
+      "bytes": 90286
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "transform_audit",
+     "source": null,
+     "started_at": "2026-10-19T00:37:40.131231",
+     "finished_at": "2026-10-19T00:37:49.245565",
+     "duration_s": 9.114,
+     "status": "warn",
+     "detail": {
+      "counts": {
+       "model:success": 11,
+       "seed:success": 3,
+       "test:pass": 32,
+       "test:warn": 2
+      },
+      "dbt_duration_s": 8.72,
+      "warnings": [
+       "warn_rows_in_quarantine",
+       "assert_analysis_cohort_is_substantial"
+      ]
+     }
+    },
+    {
+     "run_id": "20261019T003738Z-97d131",
+     "step": "publish",
+     "source": null,
+     "started_at": "2026-10-19T00:37:49.290723",
+     "finished_at": "2026-10-19T00:37:49.437277",
+     "duration_s": 0.147,
+     "status": "success",
+     "detail": {
+      "tables": {
+       "dim_geography": 140,
+       "dim_measure": 80,
+       "fct_medicare_geo_year": 583,
+       "fct_population_health": 4907,
+       "mart_county_cost_health": 125,
+       "mart_state_year": 28
+      }
+     }
+    }
+   ]
+  },
+  "checks": [
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.duplicate_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": null,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.required_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": "45 contracted columns",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.drift_vs_previous_release",
+    "status": "pass",
+    "observed": {
+     "added": [],
+     "removed": []
+    },
+    "expected": null,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "volume.row_count",
+    "status": "pass",
+    "observed": 583,
+    "expected": {
+     "min": 500,
+     "max": 5000
+    },
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "grain.unique",
+    "status": "pass",
+    "observed": 0,
+    "expected": "unique on (YEAR, BENE_GEO_LVL, BENE_GEO_DESC, BENE_AGE_LVL)",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "values.row_error_budget",
+    "status": "pass",
+    "observed": {
+     "rows": 0,
+     "rate": 0
+    },
+    "expected": "<= 0.50% of rows",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "values.suppression_rate",
+    "status": "pass",
+    "observed": 0.051458,
+    "expected": "<= 10.00% of TOT_MDCR_STDZD_PYMT_PC",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.243983"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "header.duplicate_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": null,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "header.required_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": "20 contracted columns",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "header.drift_vs_previous_release",
+    "status": "pass",
+    "observed": {
+     "added": [],
+     "removed": []
+    },
+    "expected": null,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "volume.row_count",
+    "status": "pass",
+    "observed": 4910,
+    "expected": {
+     "min": 1000,
+     "max": 50000
+    },
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "volume.change_vs_previous_release",
+    "status": "pass",
+    "observed": 0,
+    "expected": "<= 20% vs 4910 rows",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "grain.unique",
+    "status": "pass",
+    "observed": 0,
+    "expected": "unique on (Year, LocationID, MeasureId, DataValueTypeID)",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "values.row_error_budget",
+    "status": "pass",
+    "observed": {
+     "rows": 0,
+     "rate": 0
+    },
+    "expected": "<= 0.50% of rows",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "values.suppression_rate",
+    "status": "pass",
+    "observed": 0,
+    "expected": "<= 1.00% of Data_Value",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "contract",
+    "source": "cdc_places_county",
+    "check_name": "values.suppression_shift_vs_previous_release",
+    "status": "pass",
+    "observed": 0,
+    "expected": "increase <= 0.50% (previous 0.00%)",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:39.775641"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "assert_per_capita_matches_totals",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "value_between_mart_county_cost_health_diabetes_quintile__5__1",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "row_count_at_least_silver_cdc_places_county_100",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_combination_silver_cdc_places_county_geography_key__measure_id__value_type_id__data_year",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "value_between_silver_cdc_places_county_value_pct__100__0",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "warn_rows_in_quarantine",
+    "status": "warn",
+    "observed": 3,
+    "expected": 0,
+    "message": "Got 3 results, configured to warn if != 0",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "accepted_values_silver_cms_geo_variation_age_group__All___65___65",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "assert_quarantine_within_budget",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "accepted_values_silver_cms_geo_variation_geo_level__national__state__county",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_silver_cdc_places_county_geography_key",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "assert_county_totals_reconcile_to_state",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_silver_cms_geo_variation_geo_level",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_silver_cms_geo_variation_geography_key",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_silver_cms_geo_variation_year",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "row_count_at_least_silver_cms_geo_variation_100",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_combination_silver_cms_geo_variation_year__geo_level__geography_key__age_group",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "value_between_silver_cms_geo_variation_ma_participation_rate__1__0",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "value_between_silver_cms_geo_variation_std_payment_per_capita__200000__0",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_combination_fct_population_health_geography_key__measure_id__value_type_id__data_year",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "relationships_fct_population_health_measure_id__measure_id__ref_dim_measure_",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_dim_measure_measure_key",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_combination_fct_medicare_geo_year_year__geography_key__age_group",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "value_between_fct_medicare_geo_year_geographic_price_index__3_0__0_5",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "accepted_values_dim_geography_geo_level__national__state__county",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "accepted_values_dim_geography_vintage_status__current__retired",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "relationships_fct_medicare_geo_year_geography_key__geography_key__ref_dim_geography_",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "relationships_fct_population_health_geography_key__geography_key__ref_dim_geography_",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_dim_geography_geography_key",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_combination_mart_state_year_year__geography_key",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "assert_analysis_cohort_is_substantial",
+    "status": "warn",
+    "observed": 1,
+    "expected": 0,
+    "message": "Got 1 result, configured to warn if != 0",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_mart_county_cost_health_cohort_status",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "not_null_mart_county_cost_health_county_fips",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "unique_mart_county_cost_health_county_fips",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   },
+   {
+    "run_id": "20261019T003738Z-97d131",
+    "layer": "dbt",
+    "source": null,
+    "check_name": "accepted_values_silver_cdc_places_county_value_type_id__AgeAdjPrv__CrdPrv",
+    "status": "pass",
+    "observed": 0,
+    "expected": 0,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:48.866996"
+   }
+  ],
+  "check_details": {
+   "warn_rows_in_quarantine": {
+    "check_name": "warn_rows_in_quarantine",
+    "status": "warn",
+    "observed": 3,
+    "expected": 0,
+    "message": "Got 3 results, configured to warn if != 0",
+    "sql": "-- Visibility: any quarantined row raises a warning (it does not block publication while within budget).\n\n\nselect source, release_id, source_line, natural_key, dq_errors\nfrom \"hcip\".\"silver\".\"silver_quarantine\"",
+    "failing_rows": [
+     {
+      "source": "cdc_places_county",
+      "release_id": "2026-10-01",
+      "source_line": 2,
+      "natural_key": "2023|US|SELFCARE|AgeAdjPrv",
+      "dq_errors": [
+       "confidence interval does not bracket value"
+      ]
+     },
+     {
+      "source": "cdc_places_county",
+      "release_id": "2026-10-01",
+      "source_line": 3,
+      "natural_key": "2023|02060|INDEPLIVE|CrdPrv",
+      "dq_errors": [
+       "confidence interval does not bracket value"
+      ]
+     },
+     {
+      "source": "cdc_places_county",
+      "release_id": "2026-10-01",
+      "source_line": 4,
+      "natural_key": "2023|02220|CHD|AgeAdjPrv",
+      "dq_errors": [
+       "confidence interval does not bracket value"
+      ]
+     }
+    ]
+   },
+   "assert_analysis_cohort_is_substantial": {
+    "check_name": "assert_analysis_cohort_is_substantial",
+    "status": "warn",
+    "observed": 1,
+    "expected": 0,
+    "message": "Got 1 result, configured to warn if != 0",
+    "sql": "-- Guardrail on the analysis itself: if fewer than half of reported counties qualify for the cohort,\n-- an upstream change (suppression, coverage, a geography recode) is distorting the comparison.\n\n\nselect\n    count(*) filter (where in_analysis_cohort)  as cohort_counties,\n    count(*)                                    as all_counties\nfrom \"hcip\".\"gold\".\"mart_county_cost_health\"\nhaving count(*) filter (where in_analysis_cohort) < 0.5 * count(*)",
+    "failing_rows": [
+     {
+      "cohort_counties": 38,
+      "all_counties": 125
+     }
+    ]
+   }
+  },
+  "schemas": {
+   "cms_geo_variation": {
+    "release_state": "unchanged (this run re-validated the already accepted release)",
+    "current_release": "fixture-2026-05-15",
+    "previous_release": "fixture-2026-05-15",
+    "current_header": [
+     "YEAR",
+     "BENE_GEO_LVL",
+     "BENE_GEO_DESC",
+     "BENE_GEO_CD",
+     "BENE_AGE_LVL",
+     "BENES_TOTAL_CNT",
+     "BENES_WTH_PTAPTB_CNT",
+     "BENES_OM_CNT",
+     "BENES_MA_CNT",
+     "MA_PRTCPTN_RATE",
+     "BENE_AVG_AGE",
+     "BENE_FEML_PCT",
+     "BENE_MALE_PCT",
+     "BENE_RACE_WHT_PCT",
+     "BENE_RACE_BLACK_PCT",
+     "BENE_RACE_HSPNC_PCT",
+     "BENE_RACE_OTHR_PCT",
+     "BENE_DUAL_PCT",
+     "TOT_MDCR_PYMT_AMT",
+     "TOT_MDCR_STDZD_PYMT_AMT",
+     "TOT_MDCR_PYMT_PC",
+     "TOT_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_PYMT_AMT",
+     "IP_MDCR_PYMT_PCT",
+     "IP_MDCR_PYMT_PC",
+     "IP_MDCR_PYMT_PER_USER",
+     "IP_MDCR_STDZD_PYMT_AMT",
+     "IP_MDCR_STDZD_PYMT_PCT",
+     "IP_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IP_CVRD_STAY_CNT",
+     "BENES_IP_PCT",
+     "IP_CVRD_STAYS_PER_1000_BENES",
+     "IP_CVRD_DAYS_PER_1000_BENES",
+     "ACUTE_HOSP_READMSN_CNT",
+     "ACUTE_HOSP_READMSN_PCT",
+     "BENES_ER_VISITS_CNT",
+     "ER_VISITS_PER_1000_BENES",
+     "BENES_ER_VISITS_PCT",
+     "OP_MDCR_PYMT_AMT",
+     "OP_MDCR_PYMT_PCT",
+     "OP_MDCR_PYMT_PC",
+     "OP_MDCR_PYMT_PER_USER",
+     "OP_MDCR_STDZD_PYMT_AMT",
+     "OP_MDCR_STDZD_PYMT_PCT",
+     "OP_MDCR_STDZD_PYMT_PC",
+     "OP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_CNT",
+     "BENES_OP_PCT",
+     "OP_VISITS_PER_1000_BENES",
+     "ASC_MDCR_PYMT_AMT",
+     "ASC_MDCR_PYMT_PCT",
+     "ASC_MDCR_PYMT_PC",
+     "ASC_MDCR_PYMT_PER_USER",
+     "ASC_MDCR_STDZD_PYMT_AMT",
+     "ASC_MDCR_STDZD_PYMT_PCT",
+     "ASC_MDCR_STDZD_PYMT_PC",
+     "ASC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_ASC_CNT",
+     "BENES_ASC_PCT",
+     "ASC_EVNTS_PER_1000_BENES",
+     "SNF_MDCR_PYMT_AMT",
+     "SNF_MDCR_PYMT_PCT",
+     "SNF_MDCR_PYMT_PC",
+     "SNF_MDCR_PYMT_PER_USER",
+     "SNF_MDCR_STDZD_PYMT_AMT",
+     "SNF_MDCR_STDZD_PYMT_PCT",
+     "SNF_MDCR_STDZD_PYMT_PC",
+     "SNF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_SNF_CNT",
+     "BENES_SNF_PCT",
+     "SNF_CVRD_STAYS_PER_1000_BENES",
+     "SNF_CVRD_DAYS_PER_1000_BENES",
+     "IRF_MDCR_PYMT_AMT",
+     "IRF_MDCR_PYMT_PCT",
+     "IRF_MDCR_PYMT_PC",
+     "IRF_MDCR_PYMT_PER_USER",
+     "IRF_MDCR_STDZD_PYMT_AMT",
+     "IRF_MDCR_STDZD_PYMT_PCT",
+     "IRF_MDCR_STDZD_PYMT_PC",
+     "IRF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IRF_CNT",
+     "BENES_IRF_PCT",
+     "IRF_CVRD_STAYS_PER_1000_BENES",
+     "IRF_CVRD_DAYS_PER_1000_BENES",
+     "LTCH_MDCR_PYMT_AMT",
+     "LTCH_MDCR_PYMT_PCT",
+     "LTCH_MDCR_PYMT_PC",
+     "LTCH_MDCR_PYMT_PER_USER",
+     "LTCH_MDCR_STDZD_PYMT_AMT",
+     "LTCH_MDCR_STDZD_PYMT_PCT",
+     "LTCH_MDCR_STDZD_PYMT_PC",
+     "LTCH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_LTCH_CNT",
+     "BENES_LTCH_PCT",
+     "LTCH_CVRD_STAYS_PER_1000_BENES",
+     "LTCH_CVRD_DAYS_PER_1000_BENES",
+     "HH_MDCR_PYMT_AMT",
+     "HH_MDCR_PYMT_PCT",
+     "HH_MDCR_PYMT_PC",
+     "HH_MDCR_PYMT_PER_USER",
+     "HH_MDCR_STDZD_PYMT_AMT",
+     "HH_MDCR_STDZD_PYMT_PCT",
+     "HH_MDCR_STDZD_PYMT_PC",
+     "HH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HH_CNT",
+     "BENES_HH_PCT",
+     "HH_EPISODES_PER_1000_BENES",
+     "HH_VISITS_PER_1000_BENES",
+     "HOSPC_MDCR_PYMT_AMT",
+     "HOSPC_MDCR_PYMT_PCT",
+     "HOSPC_MDCR_PYMT_PC",
+     "HOSPC_MDCR_PYMT_PER_USER",
+     "HOSPC_MDCR_STDZD_PYMT_AMT",
+     "HOSPC_MDCR_STDZD_PYMT_PCT",
+     "HOSPC_MDCR_STDZD_PYMT_PC",
+     "HOSPC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HOSPC_CNT",
+     "BENES_HOSPC_PCT",
+     "HOSPC_CVRD_STAYS_PER_1000_BENES",
+     "HOSPC_CVRD_DAYS_PER_1000_BENES",
+     "EM_MDCR_PYMT_AMT",
+     "EM_MDCR_PYMT_PCT",
+     "EM_MDCR_PYMT_PC",
+     "EM_MDCR_PYMT_PER_USER",
+     "EM_MDCR_STDZD_PYMT_AMT",
+     "EM_MDCR_STDZD_PYMT_PCT",
+     "EM_MDCR_STDZD_PYMT_PC",
+     "EM_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_EM_CNT",
+     "BENES_EM_PCT",
+     "EM_EVNTS_PER_1000_BENES",
+     "PRCDRS_MDCR_PYMT_AMT",
+     "PRCDRS_MDCR_PYMT_PCT",
+     "PRCDRS_MDCR_PYMT_PC",
+     "PRCDRS_MDCR_PYMT_PER_USER",
+     "PRCDRS_MDCR_STDZD_PYMT_AMT",
+     "PRCDRS_MDCR_STDZD_PYMT_PCT",
+     "PRCDRS_MDCR_STDZD_PYMT_PC",
+     "PRCDRS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_PRCDRS_CNT",
+     "BENES_PRCDRS_PCT",
+     "PRCDR_EVNTS_PER_1000_BENES",
+     "TESTS_MDCR_PYMT_AMT",
+     "TESTS_MDCR_PYMT_PCT",
+     "TESTS_MDCR_PYMT_PC",
+     "TESTS_MDCR_PYMT_PER_USER",
+     "TESTS_MDCR_STDZD_PYMT_AMT",
+     "TESTS_MDCR_STDZD_PYMT_PCT",
+     "TESTS_MDCR_STDZD_PYMT_PC",
+     "TESTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TESTS_CNT",
+     "BENES_TESTS_PCT",
+     "TESTS_EVNTS_PER_1000_BENES",
+     "IMGNG_MDCR_PYMT_AMT",
+     "IMGNG_MDCR_PYMT_PCT",
+     "IMGNG_MDCR_PYMT_PC",
+     "IMGNG_MDCR_PYMT_PER_USER",
+     "IMGNG_MDCR_STDZD_PYMT_AMT",
+     "IMGNG_MDCR_STDZD_PYMT_PCT",
+     "IMGNG_MDCR_STDZD_PYMT_PC",
+     "IMGNG_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IMGNG_CNT",
+     "BENES_IMGNG_PCT",
+     "IMGNG_EVNTS_PER_1000_BENES",
+     "DME_MDCR_PYMT_AMT",
+     "DME_MDCR_PYMT_PCT",
+     "DME_MDCR_PYMT_PC",
+     "DME_MDCR_PYMT_PER_USER",
+     "DME_MDCR_STDZD_PYMT_AMT",
+     "DME_MDCR_STDZD_PYMT_PCT",
+     "DME_MDCR_STDZD_PYMT_PC",
+     "DME_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_DME_CNT",
+     "BENES_DME_PCT",
+     "DME_EVNTS_PER_1000_BENES",
+     "OP_DLYS_MDCR_PYMT_AMT",
+     "OP_DLYS_MDCR_PYMT_PCT",
+     "OP_DLYS_MDCR_PYMT_PC",
+     "OP_DLYS_MDCR_PYMT_PER_USER",
+     "OP_DLYS_MDCR_STDZD_PYMT_AMT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PCT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PC",
+     "OP_DLYS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_DLYS_CNT",
+     "BENES_OP_DLYS_PCT",
+     "OP_DLYS_VISITS_PER_1000_BENES",
+     "FQHC_RHC_MDCR_PYMT_AMT",
+     "FQHC_RHC_MDCR_PYMT_PCT",
+     "FQHC_RHC_MDCR_PYMT_PC",
+     "FQHC_RHC_MDCR_PYMT_PER_USER",
+     "FQHC_RHC_MDCR_STDZD_PYMT_AMT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PCT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PC",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PU",
+     "BENES_FQHC_RHC_CNT",
+     "BENES_FQHC_RHC_PCT",
+     "FQHC_RHC_VISITS_PER_1000_BENES",
+     "AMBLNC_MDCR_PYMT_AMT",
+     "AMBLNC_MDCR_PYMT_PCT",
+     "AMBLNC_MDCR_PYMT_PC",
+     "AMBLNC_MDCR_PYMT_PER_USER",
+     "AMBLNC_MDCR_STDZD_PYMT_AMT",
+     "AMBLNC_MDCR_STDZD_PYMT_PCT",
+     "AMBLNC_MDCR_STDZD_PYMT_PC",
+     "AMBLNC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_AMBLNC_CNT",
+     "BENES_AMBLNC_PCT",
+     "AMBLNC_EVNTS_PER_1000_BENES",
+     "TRTMNTS_MDCR_PYMT_AMT",
+     "TRTMNTS_MDCR_PYMT_PCT",
+     "TRTMNTS_MDCR_PYMT_PC",
+     "TRTMNTS_MDCR_PYMT_PER_USER",
+     "TRTMNTS_MDCR_STDZD_PYMT_AMT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PCT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PC",
+     "TRTMNTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TRTMNTS_CNT",
+     "BENES_TRTMNTS_PCT",
+     "TRTMNTS_EVNTS_PER_1000_BENES",
+     "PTB_OTHR_SRVCS_MDCR_PYMT_AMT",
+     "PTB_OTHR_SRVCS_MDCR_STDZD_PYMT",
+     "TOT_PBPMT_RDCTN_AMT",
+     "TOT_PBPMT_RDCTN_PCC",
+     "PQI03_DBTS_AGE_LT_65",
+     "PQI03_DBTS_AGE_65_74",
+     "PQI03_DBTS_AGE_GE_75",
+     "PQI05_COPD_ASTHMA_AGE_40_64",
+     "PQI05_COPD_ASTHMA_AGE_65_74",
+     "PQI05_COPD_ASTHMA_AGE_GE_75",
+     "PQI07_HYPRTNSN_AGE_LT_65",
+     "PQI07_HYPRTNSN_AGE_65_74",
+     "PQI07_HYPRTNSN_AGE_GE_75",
+     "PQI08_CHF_AGE_LT_65",
+     "PQI08_CHF_AGE_65_74",
+     "PQI08_CHF_AGE_GE_75",
+     "PQI11_BCTRL_PNA_AGE_LT_65",
+     "PQI11_BCTRL_PNA_AGE_65_74",
+     "PQI11_BCTRL_PNA_AGE_GE_75",
+     "PQI12_UTI_AGE_LT_65",
+     "PQI12_UTI_AGE_65_74",
+     "PQI12_UTI_AGE_GE_75",
+     "PQI15_ASTHMA_AGE_LT_40",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_LT_65",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_65_74",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_GE_75"
+    ],
+    "previous_header": [
+     "YEAR",
+     "BENE_GEO_LVL",
+     "BENE_GEO_DESC",
+     "BENE_GEO_CD",
+     "BENE_AGE_LVL",
+     "BENES_TOTAL_CNT",
+     "BENES_WTH_PTAPTB_CNT",
+     "BENES_OM_CNT",
+     "BENES_MA_CNT",
+     "MA_PRTCPTN_RATE",
+     "BENE_AVG_AGE",
+     "BENE_FEML_PCT",
+     "BENE_MALE_PCT",
+     "BENE_RACE_WHT_PCT",
+     "BENE_RACE_BLACK_PCT",
+     "BENE_RACE_HSPNC_PCT",
+     "BENE_RACE_OTHR_PCT",
+     "BENE_DUAL_PCT",
+     "TOT_MDCR_PYMT_AMT",
+     "TOT_MDCR_STDZD_PYMT_AMT",
+     "TOT_MDCR_PYMT_PC",
+     "TOT_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_PYMT_AMT",
+     "IP_MDCR_PYMT_PCT",
+     "IP_MDCR_PYMT_PC",
+     "IP_MDCR_PYMT_PER_USER",
+     "IP_MDCR_STDZD_PYMT_AMT",
+     "IP_MDCR_STDZD_PYMT_PCT",
+     "IP_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IP_CVRD_STAY_CNT",
+     "BENES_IP_PCT",
+     "IP_CVRD_STAYS_PER_1000_BENES",
+     "IP_CVRD_DAYS_PER_1000_BENES",
+     "ACUTE_HOSP_READMSN_CNT",
+     "ACUTE_HOSP_READMSN_PCT",
+     "BENES_ER_VISITS_CNT",
+     "ER_VISITS_PER_1000_BENES",
+     "BENES_ER_VISITS_PCT",
+     "OP_MDCR_PYMT_AMT",
+     "OP_MDCR_PYMT_PCT",
+     "OP_MDCR_PYMT_PC",
+     "OP_MDCR_PYMT_PER_USER",
+     "OP_MDCR_STDZD_PYMT_AMT",
+     "OP_MDCR_STDZD_PYMT_PCT",
+     "OP_MDCR_STDZD_PYMT_PC",
+     "OP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_CNT",
+     "BENES_OP_PCT",
+     "OP_VISITS_PER_1000_BENES",
+     "ASC_MDCR_PYMT_AMT",
+     "ASC_MDCR_PYMT_PCT",
+     "ASC_MDCR_PYMT_PC",
+     "ASC_MDCR_PYMT_PER_USER",
+     "ASC_MDCR_STDZD_PYMT_AMT",
+     "ASC_MDCR_STDZD_PYMT_PCT",
+     "ASC_MDCR_STDZD_PYMT_PC",
+     "ASC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_ASC_CNT",
+     "BENES_ASC_PCT",
+     "ASC_EVNTS_PER_1000_BENES",
+     "SNF_MDCR_PYMT_AMT",
+     "SNF_MDCR_PYMT_PCT",
+     "SNF_MDCR_PYMT_PC",
+     "SNF_MDCR_PYMT_PER_USER",
+     "SNF_MDCR_STDZD_PYMT_AMT",
+     "SNF_MDCR_STDZD_PYMT_PCT",
+     "SNF_MDCR_STDZD_PYMT_PC",
+     "SNF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_SNF_CNT",
+     "BENES_SNF_PCT",
+     "SNF_CVRD_STAYS_PER_1000_BENES",
+     "SNF_CVRD_DAYS_PER_1000_BENES",
+     "IRF_MDCR_PYMT_AMT",
+     "IRF_MDCR_PYMT_PCT",
+     "IRF_MDCR_PYMT_PC",
+     "IRF_MDCR_PYMT_PER_USER",
+     "IRF_MDCR_STDZD_PYMT_AMT",
+     "IRF_MDCR_STDZD_PYMT_PCT",
+     "IRF_MDCR_STDZD_PYMT_PC",
+     "IRF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IRF_CNT",
+     "BENES_IRF_PCT",
+     "IRF_CVRD_STAYS_PER_1000_BENES",
+     "IRF_CVRD_DAYS_PER_1000_BENES",
+     "LTCH_MDCR_PYMT_AMT",
+     "LTCH_MDCR_PYMT_PCT",
+     "LTCH_MDCR_PYMT_PC",
+     "LTCH_MDCR_PYMT_PER_USER",
+     "LTCH_MDCR_STDZD_PYMT_AMT",
+     "LTCH_MDCR_STDZD_PYMT_PCT",
+     "LTCH_MDCR_STDZD_PYMT_PC",
+     "LTCH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_LTCH_CNT",
+     "BENES_LTCH_PCT",
+     "LTCH_CVRD_STAYS_PER_1000_BENES",
+     "LTCH_CVRD_DAYS_PER_1000_BENES",
+     "HH_MDCR_PYMT_AMT",
+     "HH_MDCR_PYMT_PCT",
+     "HH_MDCR_PYMT_PC",
+     "HH_MDCR_PYMT_PER_USER",
+     "HH_MDCR_STDZD_PYMT_AMT",
+     "HH_MDCR_STDZD_PYMT_PCT",
+     "HH_MDCR_STDZD_PYMT_PC",
+     "HH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HH_CNT",
+     "BENES_HH_PCT",
+     "HH_EPISODES_PER_1000_BENES",
+     "HH_VISITS_PER_1000_BENES",
+     "HOSPC_MDCR_PYMT_AMT",
+     "HOSPC_MDCR_PYMT_PCT",
+     "HOSPC_MDCR_PYMT_PC",
+     "HOSPC_MDCR_PYMT_PER_USER",
+     "HOSPC_MDCR_STDZD_PYMT_AMT",
+     "HOSPC_MDCR_STDZD_PYMT_PCT",
+     "HOSPC_MDCR_STDZD_PYMT_PC",
+     "HOSPC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HOSPC_CNT",
+     "BENES_HOSPC_PCT",
+     "HOSPC_CVRD_STAYS_PER_1000_BENES",
+     "HOSPC_CVRD_DAYS_PER_1000_BENES",
+     "EM_MDCR_PYMT_AMT",
+     "EM_MDCR_PYMT_PCT",
+     "EM_MDCR_PYMT_PC",
+     "EM_MDCR_PYMT_PER_USER",
+     "EM_MDCR_STDZD_PYMT_AMT",
+     "EM_MDCR_STDZD_PYMT_PCT",
+     "EM_MDCR_STDZD_PYMT_PC",
+     "EM_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_EM_CNT",
+     "BENES_EM_PCT",
+     "EM_EVNTS_PER_1000_BENES",
+     "PRCDRS_MDCR_PYMT_AMT",
+     "PRCDRS_MDCR_PYMT_PCT",
+     "PRCDRS_MDCR_PYMT_PC",
+     "PRCDRS_MDCR_PYMT_PER_USER",
+     "PRCDRS_MDCR_STDZD_PYMT_AMT",
+     "PRCDRS_MDCR_STDZD_PYMT_PCT",
+     "PRCDRS_MDCR_STDZD_PYMT_PC",
+     "PRCDRS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_PRCDRS_CNT",
+     "BENES_PRCDRS_PCT",
+     "PRCDR_EVNTS_PER_1000_BENES",
+     "TESTS_MDCR_PYMT_AMT",
+     "TESTS_MDCR_PYMT_PCT",
+     "TESTS_MDCR_PYMT_PC",
+     "TESTS_MDCR_PYMT_PER_USER",
+     "TESTS_MDCR_STDZD_PYMT_AMT",
+     "TESTS_MDCR_STDZD_PYMT_PCT",
+     "TESTS_MDCR_STDZD_PYMT_PC",
+     "TESTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TESTS_CNT",
+     "BENES_TESTS_PCT",
+     "TESTS_EVNTS_PER_1000_BENES",
+     "IMGNG_MDCR_PYMT_AMT",
+     "IMGNG_MDCR_PYMT_PCT",
+     "IMGNG_MDCR_PYMT_PC",
+     "IMGNG_MDCR_PYMT_PER_USER",
+     "IMGNG_MDCR_STDZD_PYMT_AMT",
+     "IMGNG_MDCR_STDZD_PYMT_PCT",
+     "IMGNG_MDCR_STDZD_PYMT_PC",
+     "IMGNG_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IMGNG_CNT",
+     "BENES_IMGNG_PCT",
+     "IMGNG_EVNTS_PER_1000_BENES",
+     "DME_MDCR_PYMT_AMT",
+     "DME_MDCR_PYMT_PCT",
+     "DME_MDCR_PYMT_PC",
+     "DME_MDCR_PYMT_PER_USER",
+     "DME_MDCR_STDZD_PYMT_AMT",
+     "DME_MDCR_STDZD_PYMT_PCT",
+     "DME_MDCR_STDZD_PYMT_PC",
+     "DME_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_DME_CNT",
+     "BENES_DME_PCT",
+     "DME_EVNTS_PER_1000_BENES",
+     "OP_DLYS_MDCR_PYMT_AMT",
+     "OP_DLYS_MDCR_PYMT_PCT",
+     "OP_DLYS_MDCR_PYMT_PC",
+     "OP_DLYS_MDCR_PYMT_PER_USER",
+     "OP_DLYS_MDCR_STDZD_PYMT_AMT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PCT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PC",
+     "OP_DLYS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_DLYS_CNT",
+     "BENES_OP_DLYS_PCT",
+     "OP_DLYS_VISITS_PER_1000_BENES",
+     "FQHC_RHC_MDCR_PYMT_AMT",
+     "FQHC_RHC_MDCR_PYMT_PCT",
+     "FQHC_RHC_MDCR_PYMT_PC",
+     "FQHC_RHC_MDCR_PYMT_PER_USER",
+     "FQHC_RHC_MDCR_STDZD_PYMT_AMT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PCT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PC",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PU",
+     "BENES_FQHC_RHC_CNT",
+     "BENES_FQHC_RHC_PCT",
+     "FQHC_RHC_VISITS_PER_1000_BENES",
+     "AMBLNC_MDCR_PYMT_AMT",
+     "AMBLNC_MDCR_PYMT_PCT",
+     "AMBLNC_MDCR_PYMT_PC",
+     "AMBLNC_MDCR_PYMT_PER_USER",
+     "AMBLNC_MDCR_STDZD_PYMT_AMT",
+     "AMBLNC_MDCR_STDZD_PYMT_PCT",
+     "AMBLNC_MDCR_STDZD_PYMT_PC",
+     "AMBLNC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_AMBLNC_CNT",
+     "BENES_AMBLNC_PCT",
+     "AMBLNC_EVNTS_PER_1000_BENES",
+     "TRTMNTS_MDCR_PYMT_AMT",
+     "TRTMNTS_MDCR_PYMT_PCT",
+     "TRTMNTS_MDCR_PYMT_PC",
+     "TRTMNTS_MDCR_PYMT_PER_USER",
+     "TRTMNTS_MDCR_STDZD_PYMT_AMT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PCT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PC",
+     "TRTMNTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TRTMNTS_CNT",
+     "BENES_TRTMNTS_PCT",
+     "TRTMNTS_EVNTS_PER_1000_BENES",
+     "PTB_OTHR_SRVCS_MDCR_PYMT_AMT",
+     "PTB_OTHR_SRVCS_MDCR_STDZD_PYMT",
+     "TOT_PBPMT_RDCTN_AMT",
+     "TOT_PBPMT_RDCTN_PCC",
+     "PQI03_DBTS_AGE_LT_65",
+     "PQI03_DBTS_AGE_65_74",
+     "PQI03_DBTS_AGE_GE_75",
+     "PQI05_COPD_ASTHMA_AGE_40_64",
+     "PQI05_COPD_ASTHMA_AGE_65_74",
+     "PQI05_COPD_ASTHMA_AGE_GE_75",
+     "PQI07_HYPRTNSN_AGE_LT_65",
+     "PQI07_HYPRTNSN_AGE_65_74",
+     "PQI07_HYPRTNSN_AGE_GE_75",
+     "PQI08_CHF_AGE_LT_65",
+     "PQI08_CHF_AGE_65_74",
+     "PQI08_CHF_AGE_GE_75",
+     "PQI11_BCTRL_PNA_AGE_LT_65",
+     "PQI11_BCTRL_PNA_AGE_65_74",
+     "PQI11_BCTRL_PNA_AGE_GE_75",
+     "PQI12_UTI_AGE_LT_65",
+     "PQI12_UTI_AGE_65_74",
+     "PQI12_UTI_AGE_GE_75",
+     "PQI15_ASTHMA_AGE_LT_40",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_LT_65",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_65_74",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_GE_75"
+    ]
+   },
+   "cdc_places_county": {
+    "release_state": "new release landed in this run",
+    "current_release": "2026-10-01",
+    "previous_release": "fixture-2025-12-04",
+    "current_header": [
+     "Year",
+     "StateAbbr",
+     "StateDesc",
+     "LocationName",
+     "DataSource",
+     "Category",
+     "Measure",
+     "Data_Value_Unit",
+     "Data_Value_Type",
+     "Data_Value",
+     "Data_Value_Footnote_Symbol",
+     "Data_Value_Footnote",
+     "Low_Confidence_Limit",
+     "High_Confidence_Limit",
+     "TotalPopulation",
+     "TotalPop18plus",
+     "LocationID",
+     "CategoryID",
+     "MeasureId",
+     "DataValueTypeID",
+     "Short_Question_Text",
+     "Geolocation"
+    ],
+    "previous_header": [
+     "Year",
+     "StateAbbr",
+     "StateDesc",
+     "LocationName",
+     "DataSource",
+     "Category",
+     "Measure",
+     "Data_Value_Unit",
+     "Data_Value_Type",
+     "Data_Value",
+     "Data_Value_Footnote_Symbol",
+     "Data_Value_Footnote",
+     "Low_Confidence_Limit",
+     "High_Confidence_Limit",
+     "TotalPopulation",
+     "TotalPop18plus",
+     "LocationID",
+     "CategoryID",
+     "MeasureId",
+     "DataValueTypeID",
+     "Short_Question_Text",
+     "Geolocation"
+    ]
+   }
+  },
+  "profiles": {
+   "cdc_places_county": {
+    "current_release": "2026-10-01",
+    "current": {
+     "_rows": 4910,
+     "Year": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "non_numeric": 0,
+      "min": 2022,
+      "median": 2023,
+      "mean": 2022.76,
+      "max": 2023
+     },
+     "StateAbbr": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 7,
+      "pattern": "^[A-Z]{2}$",
+      "pattern_violations": 0,
+      "values": {
+       "AK": 2400,
+       "CT": 720,
+       "PA": 670,
+       "HI": 400,
+       "RI": 400,
+       "DE": 240,
+       "US": 80
+      }
+     },
+     "StateDesc": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 7,
+      "values": {
+       "Alaska": 2400,
+       "Connecticut": 720,
+       "Pennsylvania": 670,
+       "Hawaii": 400,
+       "Rhode Island": 400,
+       "Delaware": 240,
+       "United States": 80
+      }
+     },
+     "LocationName": {
+      "present": true,
+      "nulls": 80,
+      "distinct": 117,
+      "examples": [
+       "Adams",
+       "Aleutians East",
+       "Aleutians West"
+      ]
+     },
+     "DataSource": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 1,
+      "values": {
+       "BRFSS": 4910
+      }
+     },
+     "Category": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 6,
+      "values": {
+       "Health Outcomes": 1406,
+       "Prevention": 1144,
+       "Disability": 742,
+       "Health-Related Social Needs": 742,
+       "Health Risk Behaviors": 558,
+       "Health Status": 318
+      }
+     },
+     "Measure": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "examples": [
+       "All teeth lost among adults aged >=65 years",
+       "Any disability among adults",
+       "Arthritis among adults"
+      ]
+     },
+     "Data_Value_Unit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 1,
+      "values": {
+       "%": 4910
+      }
+     },
+     "Data_Value_Type": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "values": {
+       "Age-adjusted prevalence": 2455,
+       "Crude prevalence": 2455
+      }
+     },
+     "Data_Value": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 779,
+      "non_numeric": 0,
+      "min": 2.3,
+      "median": 18.35,
+      "mean": 27.9634,
+      "max": 91.1
+     },
+     "Data_Value_Footnote_Symbol": {
+      "present": true,
+      "nulls": 4896,
+      "distinct": 1,
+      "values": {
+       "None": 4896,
+       "#": 14
+      }
+     },
+     "Low_Confidence_Limit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 737,
+      "non_numeric": 0,
+      "min": 1.9,
+      "median": 15.8,
+      "mean": 25.0801,
+      "max": 90.1
+     },
+     "High_Confidence_Limit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 829,
+      "non_numeric": 0,
+      "min": 2.5,
+      "median": 21.3,
+      "mean": 30.9069,
+      "max": 92.4
+     },
+     "TotalPopulation": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "non_numeric": 0,
+      "min": 81,
+      "median": 50255,
+      "mean": 5612200,
+      "max": 334915000
+     },
+     "TotalPop18plus": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "non_numeric": 0,
+      "min": 75,
+      "median": 41462,
+      "mean": 4393980,
+      "max": 262083000
+     },
+     "LocationID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "pattern": "^([0-9]{5}|59)$",
+      "pattern_violations": 0,
+      "examples": [
+       "02013",
+       "02016",
+       "02020"
+      ]
+     },
+     "CategoryID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 6,
+      "values": {
+       "HLTHOUT": 1406,
+       "PREVENT": 1144,
+       "DISABLT": 742,
+       "SOCLNEED": 742,
+       "RISKBEH": 558,
+       "HLTHSTAT": 318
+      }
+     },
+     "MeasureId": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "pattern": "^[A-Z0-9_]+$",
+      "pattern_violations": 0,
+      "examples": [
+       "ACCESS2",
+       "ARTHRITIS",
+       "BINGE"
+      ]
+     },
+     "DataValueTypeID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "values": {
+       "AgeAdjPrv": 2455,
+       "CrdPrv": 2455
+      }
+     },
+     "Short_Question_Text": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "examples": [
+       "All Teeth Lost",
+       "Annual Checkup",
+       "Any Disability"
+      ]
+     }
+    },
+    "previous": {
+     "_rows": 4910,
+     "Year": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "non_numeric": 0,
+      "min": 2022,
+      "median": 2023,
+      "mean": 2022.76,
+      "max": 2023
+     },
+     "StateAbbr": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 7,
+      "pattern": "^[A-Z]{2}$",
+      "pattern_violations": 0,
+      "values": {
+       "AK": 2400,
+       "CT": 720,
+       "PA": 670,
+       "HI": 400,
+       "RI": 400,
+       "DE": 240,
+       "US": 80
+      }
+     },
+     "StateDesc": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 7,
+      "values": {
+       "Alaska": 2400,
+       "Connecticut": 720,
+       "Pennsylvania": 670,
+       "Hawaii": 400,
+       "Rhode Island": 400,
+       "Delaware": 240,
+       "United States": 80
+      }
+     },
+     "LocationName": {
+      "present": true,
+      "nulls": 80,
+      "distinct": 117,
+      "examples": [
+       "Adams",
+       "Aleutians East",
+       "Aleutians West"
+      ]
+     },
+     "DataSource": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 1,
+      "values": {
+       "BRFSS": 4910
+      }
+     },
+     "Category": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 6,
+      "values": {
+       "Health Outcomes": 1406,
+       "Prevention": 1144,
+       "Disability": 742,
+       "Health-Related Social Needs": 742,
+       "Health Risk Behaviors": 558,
+       "Health Status": 318
+      }
+     },
+     "Measure": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "examples": [
+       "All teeth lost among adults aged >=65 years",
+       "Any disability among adults",
+       "Arthritis among adults"
+      ]
+     },
+     "Data_Value_Unit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 1,
+      "values": {
+       "%": 4910
+      }
+     },
+     "Data_Value_Type": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "values": {
+       "Age-adjusted prevalence": 2455,
+       "Crude prevalence": 2455
+      }
+     },
+     "Data_Value": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 779,
+      "non_numeric": 0,
+      "min": 2.3,
+      "median": 18.35,
+      "mean": 27.9634,
+      "max": 91.1
+     },
+     "Data_Value_Footnote_Symbol": {
+      "present": true,
+      "nulls": 4896,
+      "distinct": 1,
+      "values": {
+       "None": 4896,
+       "#": 14
+      }
+     },
+     "Low_Confidence_Limit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 737,
+      "non_numeric": 0,
+      "min": 1.9,
+      "median": 15.8,
+      "mean": 25.0794,
+      "max": 90.1
+     },
+     "High_Confidence_Limit": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 829,
+      "non_numeric": 0,
+      "min": 2.5,
+      "median": 21.3,
+      "mean": 30.9077,
+      "max": 92.4
+     },
+     "TotalPopulation": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "non_numeric": 0,
+      "min": 81,
+      "median": 50255,
+      "mean": 5612200,
+      "max": 334915000
+     },
+     "TotalPop18plus": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "non_numeric": 0,
+      "min": 75,
+      "median": 41462,
+      "mean": 4393980,
+      "max": 262083000
+     },
+     "LocationID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 120,
+      "pattern": "^([0-9]{5}|59)$",
+      "pattern_violations": 0,
+      "examples": [
+       "02013",
+       "02016",
+       "02020"
+      ]
+     },
+     "CategoryID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 6,
+      "values": {
+       "HLTHOUT": 1406,
+       "PREVENT": 1144,
+       "DISABLT": 742,
+       "SOCLNEED": 742,
+       "RISKBEH": 558,
+       "HLTHSTAT": 318
+      }
+     },
+     "MeasureId": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "pattern": "^[A-Z0-9_]+$",
+      "pattern_violations": 0,
+      "examples": [
+       "ACCESS2",
+       "ARTHRITIS",
+       "BINGE"
+      ]
+     },
+     "DataValueTypeID": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 2,
+      "values": {
+       "AgeAdjPrv": 2455,
+       "CrdPrv": 2455
+      }
+     },
+     "Short_Question_Text": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 40,
+      "examples": [
+       "All Teeth Lost",
+       "Annual Checkup",
+       "Any Disability"
+      ]
+     }
+    },
+    "previous_release": "fixture-2025-12-04"
+   }
+  },
+  "releases": {
+   "cms_geo_variation": [
+    {
+     "release_id": "fixture-2026-05-15",
+     "row_count": 583,
+     "contract_status": "pass",
+     "suppression_rate": 0.051458,
+     "bytes": 905369,
+     "landed_at": "2026-10-19T00:36:27",
+     "accepted_at": "2026-10-19T00:37:39.361698",
+     "published_at": "2026-10-19T00:36:38.421652",
+     "is_current": true
+    }
+   ],
+   "cdc_places_county": [
+    {
+     "release_id": "fixture-2025-12-04",
+     "row_count": 4910,
+     "contract_status": "pass",
+     "suppression_rate": 0,
+     "bytes": 1168459,
+     "landed_at": "2026-10-19T00:36:28",
+     "accepted_at": "2026-10-19T00:36:28.900566",
+     "published_at": "2026-10-19T00:36:38.430661",
+     "is_current": false
+    },
+    {
+     "release_id": "2026-10-01",
+     "row_count": 4910,
+     "contract_status": "pass",
+     "suppression_rate": 0,
+     "bytes": 1173342,
+     "landed_at": "2026-10-19T00:37:39",
+     "accepted_at": "2026-10-19T00:37:39.918755",
+     "published_at": "2026-10-19T00:37:49.406946",
+     "is_current": true
+    }
+   ]
+  },
+  "publish_state": {
+   "served_run_id": "20261019T003738Z-97d131",
+   "served_releases": {
+    "cdc_places_county": "2026-10-01",
+    "cms_geo_variation": "fixture-2026-05-15"
+   },
+   "published_at": "2026-10-19T00:37:49+00:00",
+   "this_run_is_served": true,
+   "write_audit_publish": "Consumers only see a run after its dbt audit passes; a blocked or failed run leaves the previously published gold layer in place."
+  },
+  "logs": {
+   "dbt": "00:37:47  38 of 48 START test relationships_fct_medicare_geo_year_geography_key__geography_key__ref_dim_geography_  [RUN]\n00:37:47  36 of 48 PASS accepted_values_dim_geography_geo_level__national__state__county . [PASS in 0.07s]\n00:37:47  39 of 48 START test relationships_fct_population_health_geography_key__geography_key__ref_dim_geography_  [RUN]\n00:37:47  40 of 48 START test unique_dim_geography_geography_key ......................... [RUN]\n00:37:47  37 of 48 PASS accepted_values_dim_geography_vintage_status__current__retired ... [PASS in 0.09s]\n00:37:47  38 of 48 PASS relationships_fct_medicare_geo_year_geography_key__geography_key__ref_dim_geography_  [PASS in 0.09s]\n00:37:47  39 of 48 PASS relationships_fct_population_health_geography_key__geography_key__ref_dim_geography_  [PASS in 0.09s]\n00:37:47  40 of 48 PASS unique_dim_geography_geography_key ............................... [PASS in 0.06s]\n00:37:47  41 of 48 START sql table model gold.mart_county_cost_health .................... [RUN]\n00:37:47  42 of 48 START sql table model gold.mart_state_year ............................ [RUN]\n00:37:48  42 of 48 OK created sql table model gold.mart_state_year ....................... [OK in 0.06s]\n00:37:48  43 of 48 START test unique_combination_mart_state_year_year__geography_key ..... [RUN]\n00:37:48  41 of 48 OK created sql table model gold.mart_county_cost_health ............... [OK in 0.10s]\n00:37:48  44 of 48 START test assert_analysis_cohort_is_substantial ...................... [RUN]\n00:37:48  45 of 48 START test not_null_mart_county_cost_health_cohort_status ............. [RUN]\n00:37:48  46 of 48 START test not_null_mart_county_cost_health_county_fips ............... [RUN]\n00:37:48  43 of 48 PASS unique_combination_mart_state_year_year__geography_key ........... [PASS in 0.06s]\n00:37:48  47 of 48 START test unique_mart_county_cost_health_county_fips ................. [RUN]\n00:37:48  44 of 48 WARN 1 assert_analysis_cohort_is_substantial .......................... [WARN 1 in 0.08s]\n00:37:48  45 of 48 PASS not_null_mart_county_cost_health_cohort_status ................... [PASS in 0.08s]\n00:37:48  46 of 48 PASS not_null_mart_county_cost_health_county_fips ..................... [PASS in 0.08s]\n00:37:48  48 of 48 START test value_between_mart_county_cost_health_diabetes_quintile__5__1  [RUN]\n00:37:48  47 of 48 PASS unique_mart_county_cost_health_county_fips ....................... [PASS in 0.06s]\n00:37:48  48 of 48 PASS value_between_mart_county_cost_health_diabetes_quintile__5__1 .... [PASS in 0.03s]\n00:37:48  \n00:37:48  Finished running 3 seeds, 9 table models, 34 data tests, 2 view models in 0 hours 0 minutes and 1.96 seconds (1.96s).\n00:37:48  \n00:37:48  Completed with 2 warnings:\n00:37:48  \n00:37:48  [WARNING]: in test warn_rows_in_quarantine (tests\\warn_rows_in_quarantine.sql)\n00:37:48  [WARNING]: Got 3 results, configured to warn if != 0\n00:37:48  \n00:37:48    compiled code at /data/hcip/warehouse/runs/20261019T003738Z-97d131/dbt/target/compiled/hcip/tests/warn_rows_in_quarantine.sql\n00:37:48  \n00:37:48  [WARNING]: in test assert_analysis_cohort_is_substantial (tests\\assert_analysis_cohort_is_substantial.sql)\n00:37:48  [WARNING]: Got 1 result, configured to warn if != 0\n00:37:48  \n00:37:48    compiled code at /data/hcip/warehouse/runs/20261019T003738Z-97d131/dbt/target/compiled/hcip/tests/assert_analysis_cohort_is_substantial.sql\n00:37:48  \n00:37:48  Done. PASS=46 WARN=2 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=48"
+  }
+ }
+}

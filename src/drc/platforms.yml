@@ -1,0 +1,52 @@
+# Platform registry: what the copilot needs to know about each pipeline that is not recorded in the
+# pipeline's own run metadata. In an enterprise deployment this comes from the data catalog.
+
+hcip:
+  title: Healthcare Cost & Utilization Intelligence Platform
+  repository: https://github.com/KilgoreC1024/healthcare-cost-utilization-platform
+  pipeline: hcip_pipeline
+  sources: [cms_geo_variation, cdc_places_county]
+  # Downstream consumers of the published gold layer (hcip reads these tables in analysis.py and
+  # dashboard.py). The gold layer is only replaced by an audited run (write-audit-publish).
+  consumers:
+    - name: Public dashboard (GitHub Pages)
+      reads: [gold.mart_county_cost_health, silver.silver_quarantine]
+      owner: analytics
+    - name: Findings report (docs/FINDINGS.md, reports/findings.json)
+      reads: [gold.mart_county_cost_health, gold.mart_state_year]
+      owner: analytics
+  # Operational knowledge the copilot may search. The fault-injection catalog (docs/fault-injection.md)
+  # is deliberately excluded: it maps each benchmark scenario to its expected check, which would turn
+  # the benchmark into a lookup exercise.
+  knowledge:
+    - docs/runbook.md
+    - docs/architecture.md
+    - docs/adr/0004-contracts-error-budgets-quarantine.md
+    - docs/adr/0005-write-audit-publish.md
+
+clinical_etl:
+  title: Synthetic Clinical Data ETL with Apache Airflow
+  repository: https://github.com/KilgoreC1024/airflow-synthetic-clinical-etl
+  pipeline: synthetic_clinical_etl
+  sources: [synthetic_fhir_bundle]
+  consumers:
+    - name: Clinical demo tables (runtime/clinical_demo.sqlite)
+      reads: [patients, encounters, conditions]
+      owner: clinical-analytics
+  knowledge:
+    - README.md
+  # The clinical ETL has no YAML data contract; its gates are code (clinical_etl/pipeline.py). This is a
+  # faithful summary of those code-defined rules so the copilot can reason about them.
+  contract:
+    source: synthetic_fhir_bundle
+    format: FHIR R4-shaped JSON Bundle (type=collection), resources Patient, Encounter, Condition
+    gates:
+      extract: "resourceType must be Bundle, type must be collection, entry must be a non-empty list of resource objects"
+      transform: "only Patient, Encounter and Condition are supported (unknown resource types fail); required fields must be non-empty strings; Patient.gender in {male, female, other, unknown}; Patient.birthDate is YYYY-MM-DD; Encounter.period.start is ISO 8601 with a time zone; references must be '<Type>/<id>'"
+      quality_gate: "each table non-empty; ids unique per table; every Encounter.subject and Condition.subject references an existing Patient; every Condition.encounter references an existing Encounter; a Condition's patient must equal its Encounter's patient"
+      load: "transactional full refresh of patients, encounters, conditions in SQLite with foreign keys enforced (BEGIN IMMEDIATE)"
+      audit: "post-load row counts must equal the validated counts; zero foreign-key violations; zero cross-patient conditions"
+    tables:
+      patients: [id, birth_date, gender]
+      encounters: [id, patient_id, status, start_at]
+      conditions: [id, patient_id, encounter_id, code, description]

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drc"
+version = "0.1.0"
+description = "Healthcare Data Reliability Copilot: evidence-grounded AI investigation of data pipeline incidents, with human-approved remediation."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Christian Kilgore" }]
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=1.0,<2",
+    "pydantic>=2.7,<3",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+# Collectors read platform run metadata (the hcip run ledger is DuckDB). The benchmark lab also needs a
+# checkout of each pipeline repository to re-create incidents (see docs/benchmark.md).
+collect = ["duckdb>=1.5,<2"]
+dev = ["duckdb>=1.5,<2", "pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+drc = "drc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+drc = ["py.typed", "platforms.yml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

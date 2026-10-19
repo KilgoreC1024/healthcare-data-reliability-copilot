@@ -1,0 +1,1962 @@
+{
+ "schema_version": 1,
+ "incident": {
+  "incident_id": "INC-H14",
+  "platform": "hcip",
+  "pipeline": "hcip_pipeline",
+  "run_id": "20261019T003750Z-053139",
+  "detected_at": "2026-10-19T00:37:50.920188",
+  "signal": "run_blocked",
+  "failed_stage": "contract",
+  "headline": "[contract] cms_geo_variation: contract FAIL - header.drift_vs_previous_release=warn: added: NEW_MDCR_MEASURE_PC; removed: -; volume.row_count=fail: 408 rows outside expected range; volume.change_vs_previous_release=fail: row count changed 30.0%"
+ },
+ "evidence": {
+  "run": {
+   "run_id": "20261019T003750Z-053139",
+   "profile": "fixture",
+   "trigger": "scheduled",
+   "started_at": "2026-10-19T00:37:50.301792",
+   "finished_at": "2026-10-19T00:37:50.920188",
+   "status": "blocked",
+   "message": "[contract] cms_geo_variation: contract FAIL - header.drift_vs_previous_release=warn: added: NEW_MDCR_MEASURE_PC; removed: -; volume.row_count=fail: 408 rows outside expected range; volume.change_vs_previous_release=fail: row count changed 30.0%",
+   "previous_published_run": "20261019T003627Z-5de732",
+   "warnings_on_previous_published_run": [
+    "assert_analysis_cohort_is_substantial"
+   ],
+   "steps": [
+    {
+     "run_id": "20261019T003750Z-053139",
+     "step": "land",
+     "source": "cms_geo_variation",
+     "started_at": "2026-10-19T00:37:50.353206",
+     "finished_at": "2026-10-19T00:37:50.467316",
+     "duration_s": 0.115,
+     "status": "success",
+     "detail": {
+      "release_id": "2026-10-15",
+      "skipped": false,
+      "bytes": 644506
+     }
+    },
+    {
+     "run_id": "20261019T003750Z-053139",
+     "step": "validate",
+     "source": "cms_geo_variation",
+     "started_at": "2026-10-19T00:37:50.542640",
+     "finished_at": "2026-10-19T00:37:50.860799",
+     "duration_s": 0.318,
+     "status": "failed",
+     "detail": {
+      "contract_status": "fail",
+      "rows": 408,
+      "failed_checks": [
+       "volume.row_count",
+       "volume.change_vs_previous_release"
+      ],
+      "error": "PipelineBlocked: [contract] cms_geo_variation: contract FAIL - header.drift_vs_previous_release=warn: added: NEW_MDCR_MEASURE_PC; removed: -; volume.row_count=fail: 408 rows outside expected range; volume.change_vs_previous_release=fail: row count changed 30.0%"
+     }
+    }
+   ]
+  },
+  "checks": [
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.duplicate_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": null,
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.required_columns",
+    "status": "pass",
+    "observed": [],
+    "expected": "45 contracted columns",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "header.drift_vs_previous_release",
+    "status": "warn",
+    "observed": {
+     "added": [
+      "NEW_MDCR_MEASURE_PC"
+     ],
+     "removed": []
+    },
+    "expected": null,
+    "message": "added: NEW_MDCR_MEASURE_PC; removed: -",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "volume.row_count",
+    "status": "fail",
+    "observed": 408,
+    "expected": {
+     "min": 500,
+     "max": 5000
+    },
+    "message": "408 rows outside expected range",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "volume.change_vs_previous_release",
+    "status": "fail",
+    "observed": 30.02,
+    "expected": "<= 20% vs 583 rows",
+    "message": "row count changed 30.0%",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "grain.unique",
+    "status": "pass",
+    "observed": 0,
+    "expected": "unique on (YEAR, BENE_GEO_LVL, BENE_GEO_DESC, BENE_AGE_LVL)",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "values.row_error_budget",
+    "status": "pass",
+    "observed": {
+     "rows": 0,
+     "rate": 0
+    },
+    "expected": "<= 0.50% of rows",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "values.suppression_rate",
+    "status": "pass",
+    "observed": 0.04902,
+    "expected": "<= 10.00% of TOT_MDCR_STDZD_PYMT_PC",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   },
+   {
+    "run_id": "20261019T003750Z-053139",
+    "layer": "contract",
+    "source": "cms_geo_variation",
+    "check_name": "values.suppression_shift_vs_previous_release",
+    "status": "pass",
+    "observed": -0.002438,
+    "expected": "increase <= 2.00% (previous 5.15%)",
+    "message": "",
+    "recorded_at": "2026-10-19T00:37:50.685096"
+   }
+  ],
+  "check_details": {
+   "cms_geo_variation:header.drift_vs_previous_release": {
+    "expected": null,
+    "message": "added: NEW_MDCR_MEASURE_PC; removed: -",
+    "name": "header.drift_vs_previous_release",
+    "observed": {
+     "added": [
+      "NEW_MDCR_MEASURE_PC"
+     ],
+     "removed": []
+    },
+    "samples": [],
+    "status": "warn"
+   },
+   "cms_geo_variation:volume.row_count": {
+    "expected": {
+     "max": 5000,
+     "min": 500
+    },
+    "message": "408 rows outside expected range",
+    "name": "volume.row_count",
+    "observed": 408,
+    "samples": [],
+    "status": "fail"
+   },
+   "cms_geo_variation:volume.change_vs_previous_release": {
+    "expected": "<= 20% vs 583 rows",
+    "message": "row count changed 30.0%",
+    "name": "volume.change_vs_previous_release",
+    "observed": 30.02,
+    "samples": [],
+    "status": "fail"
+   }
+  },
+  "schemas": {
+   "cms_geo_variation": {
+    "release_state": "new release landed in this run",
+    "current_release": "2026-10-15",
+    "previous_release": "fixture-2026-05-15",
+    "current_header": [
+     "YEAR",
+     "BENE_GEO_LVL",
+     "BENE_GEO_DESC",
+     "BENE_GEO_CD",
+     "BENE_AGE_LVL",
+     "BENES_TOTAL_CNT",
+     "BENES_WTH_PTAPTB_CNT",
+     "BENES_OM_CNT",
+     "BENES_MA_CNT",
+     "MA_PRTCPTN_RATE",
+     "BENE_AVG_AGE",
+     "BENE_FEML_PCT",
+     "BENE_MALE_PCT",
+     "BENE_RACE_WHT_PCT",
+     "BENE_RACE_BLACK_PCT",
+     "BENE_RACE_HSPNC_PCT",
+     "BENE_RACE_OTHR_PCT",
+     "BENE_DUAL_PCT",
+     "TOT_MDCR_PYMT_AMT",
+     "TOT_MDCR_STDZD_PYMT_AMT",
+     "TOT_MDCR_PYMT_PC",
+     "TOT_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_PYMT_AMT",
+     "IP_MDCR_PYMT_PCT",
+     "IP_MDCR_PYMT_PC",
+     "IP_MDCR_PYMT_PER_USER",
+     "IP_MDCR_STDZD_PYMT_AMT",
+     "IP_MDCR_STDZD_PYMT_PCT",
+     "IP_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IP_CVRD_STAY_CNT",
+     "BENES_IP_PCT",
+     "IP_CVRD_STAYS_PER_1000_BENES",
+     "IP_CVRD_DAYS_PER_1000_BENES",
+     "ACUTE_HOSP_READMSN_CNT",
+     "ACUTE_HOSP_READMSN_PCT",
+     "BENES_ER_VISITS_CNT",
+     "ER_VISITS_PER_1000_BENES",
+     "BENES_ER_VISITS_PCT",
+     "OP_MDCR_PYMT_AMT",
+     "OP_MDCR_PYMT_PCT",
+     "OP_MDCR_PYMT_PC",
+     "OP_MDCR_PYMT_PER_USER",
+     "OP_MDCR_STDZD_PYMT_AMT",
+     "OP_MDCR_STDZD_PYMT_PCT",
+     "OP_MDCR_STDZD_PYMT_PC",
+     "OP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_CNT",
+     "BENES_OP_PCT",
+     "OP_VISITS_PER_1000_BENES",
+     "ASC_MDCR_PYMT_AMT",
+     "ASC_MDCR_PYMT_PCT",
+     "ASC_MDCR_PYMT_PC",
+     "ASC_MDCR_PYMT_PER_USER",
+     "ASC_MDCR_STDZD_PYMT_AMT",
+     "ASC_MDCR_STDZD_PYMT_PCT",
+     "ASC_MDCR_STDZD_PYMT_PC",
+     "ASC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_ASC_CNT",
+     "BENES_ASC_PCT",
+     "ASC_EVNTS_PER_1000_BENES",
+     "SNF_MDCR_PYMT_AMT",
+     "SNF_MDCR_PYMT_PCT",
+     "SNF_MDCR_PYMT_PC",
+     "SNF_MDCR_PYMT_PER_USER",
+     "SNF_MDCR_STDZD_PYMT_AMT",
+     "SNF_MDCR_STDZD_PYMT_PCT",
+     "SNF_MDCR_STDZD_PYMT_PC",
+     "SNF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_SNF_CNT",
+     "BENES_SNF_PCT",
+     "SNF_CVRD_STAYS_PER_1000_BENES",
+     "SNF_CVRD_DAYS_PER_1000_BENES",
+     "IRF_MDCR_PYMT_AMT",
+     "IRF_MDCR_PYMT_PCT",
+     "IRF_MDCR_PYMT_PC",
+     "IRF_MDCR_PYMT_PER_USER",
+     "IRF_MDCR_STDZD_PYMT_AMT",
+     "IRF_MDCR_STDZD_PYMT_PCT",
+     "IRF_MDCR_STDZD_PYMT_PC",
+     "IRF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IRF_CNT",
+     "BENES_IRF_PCT",
+     "IRF_CVRD_STAYS_PER_1000_BENES",
+     "IRF_CVRD_DAYS_PER_1000_BENES",
+     "LTCH_MDCR_PYMT_AMT",
+     "LTCH_MDCR_PYMT_PCT",
+     "LTCH_MDCR_PYMT_PC",
+     "LTCH_MDCR_PYMT_PER_USER",
+     "LTCH_MDCR_STDZD_PYMT_AMT",
+     "LTCH_MDCR_STDZD_PYMT_PCT",
+     "LTCH_MDCR_STDZD_PYMT_PC",
+     "LTCH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_LTCH_CNT",
+     "BENES_LTCH_PCT",
+     "LTCH_CVRD_STAYS_PER_1000_BENES",
+     "LTCH_CVRD_DAYS_PER_1000_BENES",
+     "HH_MDCR_PYMT_AMT",
+     "HH_MDCR_PYMT_PCT",
+     "HH_MDCR_PYMT_PC",
+     "HH_MDCR_PYMT_PER_USER",
+     "HH_MDCR_STDZD_PYMT_AMT",
+     "HH_MDCR_STDZD_PYMT_PCT",
+     "HH_MDCR_STDZD_PYMT_PC",
+     "HH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HH_CNT",
+     "BENES_HH_PCT",
+     "HH_EPISODES_PER_1000_BENES",
+     "HH_VISITS_PER_1000_BENES",
+     "HOSPC_MDCR_PYMT_AMT",
+     "HOSPC_MDCR_PYMT_PCT",
+     "HOSPC_MDCR_PYMT_PC",
+     "HOSPC_MDCR_PYMT_PER_USER",
+     "HOSPC_MDCR_STDZD_PYMT_AMT",
+     "HOSPC_MDCR_STDZD_PYMT_PCT",
+     "HOSPC_MDCR_STDZD_PYMT_PC",
+     "HOSPC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HOSPC_CNT",
+     "BENES_HOSPC_PCT",
+     "HOSPC_CVRD_STAYS_PER_1000_BENES",
+     "HOSPC_CVRD_DAYS_PER_1000_BENES",
+     "EM_MDCR_PYMT_AMT",
+     "EM_MDCR_PYMT_PCT",
+     "EM_MDCR_PYMT_PC",
+     "EM_MDCR_PYMT_PER_USER",
+     "EM_MDCR_STDZD_PYMT_AMT",
+     "EM_MDCR_STDZD_PYMT_PCT",
+     "EM_MDCR_STDZD_PYMT_PC",
+     "EM_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_EM_CNT",
+     "BENES_EM_PCT",
+     "EM_EVNTS_PER_1000_BENES",
+     "PRCDRS_MDCR_PYMT_AMT",
+     "PRCDRS_MDCR_PYMT_PCT",
+     "PRCDRS_MDCR_PYMT_PC",
+     "PRCDRS_MDCR_PYMT_PER_USER",
+     "PRCDRS_MDCR_STDZD_PYMT_AMT",
+     "PRCDRS_MDCR_STDZD_PYMT_PCT",
+     "PRCDRS_MDCR_STDZD_PYMT_PC",
+     "PRCDRS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_PRCDRS_CNT",
+     "BENES_PRCDRS_PCT",
+     "PRCDR_EVNTS_PER_1000_BENES",
+     "TESTS_MDCR_PYMT_AMT",
+     "TESTS_MDCR_PYMT_PCT",
+     "TESTS_MDCR_PYMT_PC",
+     "TESTS_MDCR_PYMT_PER_USER",
+     "TESTS_MDCR_STDZD_PYMT_AMT",
+     "TESTS_MDCR_STDZD_PYMT_PCT",
+     "TESTS_MDCR_STDZD_PYMT_PC",
+     "TESTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TESTS_CNT",
+     "BENES_TESTS_PCT",
+     "TESTS_EVNTS_PER_1000_BENES",
+     "IMGNG_MDCR_PYMT_AMT",
+     "IMGNG_MDCR_PYMT_PCT",
+     "IMGNG_MDCR_PYMT_PC",
+     "IMGNG_MDCR_PYMT_PER_USER",
+     "IMGNG_MDCR_STDZD_PYMT_AMT",
+     "IMGNG_MDCR_STDZD_PYMT_PCT",
+     "IMGNG_MDCR_STDZD_PYMT_PC",
+     "IMGNG_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IMGNG_CNT",
+     "BENES_IMGNG_PCT",
+     "IMGNG_EVNTS_PER_1000_BENES",
+     "DME_MDCR_PYMT_AMT",
+     "DME_MDCR_PYMT_PCT",
+     "DME_MDCR_PYMT_PC",
+     "DME_MDCR_PYMT_PER_USER",
+     "DME_MDCR_STDZD_PYMT_AMT",
+     "DME_MDCR_STDZD_PYMT_PCT",
+     "DME_MDCR_STDZD_PYMT_PC",
+     "DME_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_DME_CNT",
+     "BENES_DME_PCT",
+     "DME_EVNTS_PER_1000_BENES",
+     "OP_DLYS_MDCR_PYMT_AMT",
+     "OP_DLYS_MDCR_PYMT_PCT",
+     "OP_DLYS_MDCR_PYMT_PC",
+     "OP_DLYS_MDCR_PYMT_PER_USER",
+     "OP_DLYS_MDCR_STDZD_PYMT_AMT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PCT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PC",
+     "OP_DLYS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_DLYS_CNT",
+     "BENES_OP_DLYS_PCT",
+     "OP_DLYS_VISITS_PER_1000_BENES",
+     "FQHC_RHC_MDCR_PYMT_AMT",
+     "FQHC_RHC_MDCR_PYMT_PCT",
+     "FQHC_RHC_MDCR_PYMT_PC",
+     "FQHC_RHC_MDCR_PYMT_PER_USER",
+     "FQHC_RHC_MDCR_STDZD_PYMT_AMT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PCT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PC",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PU",
+     "BENES_FQHC_RHC_CNT",
+     "BENES_FQHC_RHC_PCT",
+     "FQHC_RHC_VISITS_PER_1000_BENES",
+     "AMBLNC_MDCR_PYMT_AMT",
+     "AMBLNC_MDCR_PYMT_PCT",
+     "AMBLNC_MDCR_PYMT_PC",
+     "AMBLNC_MDCR_PYMT_PER_USER",
+     "AMBLNC_MDCR_STDZD_PYMT_AMT",
+     "AMBLNC_MDCR_STDZD_PYMT_PCT",
+     "AMBLNC_MDCR_STDZD_PYMT_PC",
+     "AMBLNC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_AMBLNC_CNT",
+     "BENES_AMBLNC_PCT",
+     "AMBLNC_EVNTS_PER_1000_BENES",
+     "TRTMNTS_MDCR_PYMT_AMT",
+     "TRTMNTS_MDCR_PYMT_PCT",
+     "TRTMNTS_MDCR_PYMT_PC",
+     "TRTMNTS_MDCR_PYMT_PER_USER",
+     "TRTMNTS_MDCR_STDZD_PYMT_AMT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PCT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PC",
+     "TRTMNTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TRTMNTS_CNT",
+     "BENES_TRTMNTS_PCT",
+     "TRTMNTS_EVNTS_PER_1000_BENES",
+     "PTB_OTHR_SRVCS_MDCR_PYMT_AMT",
+     "PTB_OTHR_SRVCS_MDCR_STDZD_PYMT",
+     "TOT_PBPMT_RDCTN_AMT",
+     "TOT_PBPMT_RDCTN_PCC",
+     "PQI03_DBTS_AGE_LT_65",
+     "PQI03_DBTS_AGE_65_74",
+     "PQI03_DBTS_AGE_GE_75",
+     "PQI05_COPD_ASTHMA_AGE_40_64",
+     "PQI05_COPD_ASTHMA_AGE_65_74",
+     "PQI05_COPD_ASTHMA_AGE_GE_75",
+     "PQI07_HYPRTNSN_AGE_LT_65",
+     "PQI07_HYPRTNSN_AGE_65_74",
+     "PQI07_HYPRTNSN_AGE_GE_75",
+     "PQI08_CHF_AGE_LT_65",
+     "PQI08_CHF_AGE_65_74",
+     "PQI08_CHF_AGE_GE_75",
+     "PQI11_BCTRL_PNA_AGE_LT_65",
+     "PQI11_BCTRL_PNA_AGE_65_74",
+     "PQI11_BCTRL_PNA_AGE_GE_75",
+     "PQI12_UTI_AGE_LT_65",
+     "PQI12_UTI_AGE_65_74",
+     "PQI12_UTI_AGE_GE_75",
+     "PQI15_ASTHMA_AGE_LT_40",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_LT_65",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_65_74",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_GE_75",
+     "NEW_MDCR_MEASURE_PC"
+    ],
+    "previous_header": [
+     "YEAR",
+     "BENE_GEO_LVL",
+     "BENE_GEO_DESC",
+     "BENE_GEO_CD",
+     "BENE_AGE_LVL",
+     "BENES_TOTAL_CNT",
+     "BENES_WTH_PTAPTB_CNT",
+     "BENES_OM_CNT",
+     "BENES_MA_CNT",
+     "MA_PRTCPTN_RATE",
+     "BENE_AVG_AGE",
+     "BENE_FEML_PCT",
+     "BENE_MALE_PCT",
+     "BENE_RACE_WHT_PCT",
+     "BENE_RACE_BLACK_PCT",
+     "BENE_RACE_HSPNC_PCT",
+     "BENE_RACE_OTHR_PCT",
+     "BENE_DUAL_PCT",
+     "TOT_MDCR_PYMT_AMT",
+     "TOT_MDCR_STDZD_PYMT_AMT",
+     "TOT_MDCR_PYMT_PC",
+     "TOT_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_PYMT_AMT",
+     "IP_MDCR_PYMT_PCT",
+     "IP_MDCR_PYMT_PC",
+     "IP_MDCR_PYMT_PER_USER",
+     "IP_MDCR_STDZD_PYMT_AMT",
+     "IP_MDCR_STDZD_PYMT_PCT",
+     "IP_MDCR_STDZD_PYMT_PC",
+     "IP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IP_CVRD_STAY_CNT",
+     "BENES_IP_PCT",
+     "IP_CVRD_STAYS_PER_1000_BENES",
+     "IP_CVRD_DAYS_PER_1000_BENES",
+     "ACUTE_HOSP_READMSN_CNT",
+     "ACUTE_HOSP_READMSN_PCT",
+     "BENES_ER_VISITS_CNT",
+     "ER_VISITS_PER_1000_BENES",
+     "BENES_ER_VISITS_PCT",
+     "OP_MDCR_PYMT_AMT",
+     "OP_MDCR_PYMT_PCT",
+     "OP_MDCR_PYMT_PC",
+     "OP_MDCR_PYMT_PER_USER",
+     "OP_MDCR_STDZD_PYMT_AMT",
+     "OP_MDCR_STDZD_PYMT_PCT",
+     "OP_MDCR_STDZD_PYMT_PC",
+     "OP_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_CNT",
+     "BENES_OP_PCT",
+     "OP_VISITS_PER_1000_BENES",
+     "ASC_MDCR_PYMT_AMT",
+     "ASC_MDCR_PYMT_PCT",
+     "ASC_MDCR_PYMT_PC",
+     "ASC_MDCR_PYMT_PER_USER",
+     "ASC_MDCR_STDZD_PYMT_AMT",
+     "ASC_MDCR_STDZD_PYMT_PCT",
+     "ASC_MDCR_STDZD_PYMT_PC",
+     "ASC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_ASC_CNT",
+     "BENES_ASC_PCT",
+     "ASC_EVNTS_PER_1000_BENES",
+     "SNF_MDCR_PYMT_AMT",
+     "SNF_MDCR_PYMT_PCT",
+     "SNF_MDCR_PYMT_PC",
+     "SNF_MDCR_PYMT_PER_USER",
+     "SNF_MDCR_STDZD_PYMT_AMT",
+     "SNF_MDCR_STDZD_PYMT_PCT",
+     "SNF_MDCR_STDZD_PYMT_PC",
+     "SNF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_SNF_CNT",
+     "BENES_SNF_PCT",
+     "SNF_CVRD_STAYS_PER_1000_BENES",
+     "SNF_CVRD_DAYS_PER_1000_BENES",
+     "IRF_MDCR_PYMT_AMT",
+     "IRF_MDCR_PYMT_PCT",
+     "IRF_MDCR_PYMT_PC",
+     "IRF_MDCR_PYMT_PER_USER",
+     "IRF_MDCR_STDZD_PYMT_AMT",
+     "IRF_MDCR_STDZD_PYMT_PCT",
+     "IRF_MDCR_STDZD_PYMT_PC",
+     "IRF_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IRF_CNT",
+     "BENES_IRF_PCT",
+     "IRF_CVRD_STAYS_PER_1000_BENES",
+     "IRF_CVRD_DAYS_PER_1000_BENES",
+     "LTCH_MDCR_PYMT_AMT",
+     "LTCH_MDCR_PYMT_PCT",
+     "LTCH_MDCR_PYMT_PC",
+     "LTCH_MDCR_PYMT_PER_USER",
+     "LTCH_MDCR_STDZD_PYMT_AMT",
+     "LTCH_MDCR_STDZD_PYMT_PCT",
+     "LTCH_MDCR_STDZD_PYMT_PC",
+     "LTCH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_LTCH_CNT",
+     "BENES_LTCH_PCT",
+     "LTCH_CVRD_STAYS_PER_1000_BENES",
+     "LTCH_CVRD_DAYS_PER_1000_BENES",
+     "HH_MDCR_PYMT_AMT",
+     "HH_MDCR_PYMT_PCT",
+     "HH_MDCR_PYMT_PC",
+     "HH_MDCR_PYMT_PER_USER",
+     "HH_MDCR_STDZD_PYMT_AMT",
+     "HH_MDCR_STDZD_PYMT_PCT",
+     "HH_MDCR_STDZD_PYMT_PC",
+     "HH_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HH_CNT",
+     "BENES_HH_PCT",
+     "HH_EPISODES_PER_1000_BENES",
+     "HH_VISITS_PER_1000_BENES",
+     "HOSPC_MDCR_PYMT_AMT",
+     "HOSPC_MDCR_PYMT_PCT",
+     "HOSPC_MDCR_PYMT_PC",
+     "HOSPC_MDCR_PYMT_PER_USER",
+     "HOSPC_MDCR_STDZD_PYMT_AMT",
+     "HOSPC_MDCR_STDZD_PYMT_PCT",
+     "HOSPC_MDCR_STDZD_PYMT_PC",
+     "HOSPC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_HOSPC_CNT",
+     "BENES_HOSPC_PCT",
+     "HOSPC_CVRD_STAYS_PER_1000_BENES",
+     "HOSPC_CVRD_DAYS_PER_1000_BENES",
+     "EM_MDCR_PYMT_AMT",
+     "EM_MDCR_PYMT_PCT",
+     "EM_MDCR_PYMT_PC",
+     "EM_MDCR_PYMT_PER_USER",
+     "EM_MDCR_STDZD_PYMT_AMT",
+     "EM_MDCR_STDZD_PYMT_PCT",
+     "EM_MDCR_STDZD_PYMT_PC",
+     "EM_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_EM_CNT",
+     "BENES_EM_PCT",
+     "EM_EVNTS_PER_1000_BENES",
+     "PRCDRS_MDCR_PYMT_AMT",
+     "PRCDRS_MDCR_PYMT_PCT",
+     "PRCDRS_MDCR_PYMT_PC",
+     "PRCDRS_MDCR_PYMT_PER_USER",
+     "PRCDRS_MDCR_STDZD_PYMT_AMT",
+     "PRCDRS_MDCR_STDZD_PYMT_PCT",
+     "PRCDRS_MDCR_STDZD_PYMT_PC",
+     "PRCDRS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_PRCDRS_CNT",
+     "BENES_PRCDRS_PCT",
+     "PRCDR_EVNTS_PER_1000_BENES",
+     "TESTS_MDCR_PYMT_AMT",
+     "TESTS_MDCR_PYMT_PCT",
+     "TESTS_MDCR_PYMT_PC",
+     "TESTS_MDCR_PYMT_PER_USER",
+     "TESTS_MDCR_STDZD_PYMT_AMT",
+     "TESTS_MDCR_STDZD_PYMT_PCT",
+     "TESTS_MDCR_STDZD_PYMT_PC",
+     "TESTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TESTS_CNT",
+     "BENES_TESTS_PCT",
+     "TESTS_EVNTS_PER_1000_BENES",
+     "IMGNG_MDCR_PYMT_AMT",
+     "IMGNG_MDCR_PYMT_PCT",
+     "IMGNG_MDCR_PYMT_PC",
+     "IMGNG_MDCR_PYMT_PER_USER",
+     "IMGNG_MDCR_STDZD_PYMT_AMT",
+     "IMGNG_MDCR_STDZD_PYMT_PCT",
+     "IMGNG_MDCR_STDZD_PYMT_PC",
+     "IMGNG_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_IMGNG_CNT",
+     "BENES_IMGNG_PCT",
+     "IMGNG_EVNTS_PER_1000_BENES",
+     "DME_MDCR_PYMT_AMT",
+     "DME_MDCR_PYMT_PCT",
+     "DME_MDCR_PYMT_PC",
+     "DME_MDCR_PYMT_PER_USER",
+     "DME_MDCR_STDZD_PYMT_AMT",
+     "DME_MDCR_STDZD_PYMT_PCT",
+     "DME_MDCR_STDZD_PYMT_PC",
+     "DME_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_DME_CNT",
+     "BENES_DME_PCT",
+     "DME_EVNTS_PER_1000_BENES",
+     "OP_DLYS_MDCR_PYMT_AMT",
+     "OP_DLYS_MDCR_PYMT_PCT",
+     "OP_DLYS_MDCR_PYMT_PC",
+     "OP_DLYS_MDCR_PYMT_PER_USER",
+     "OP_DLYS_MDCR_STDZD_PYMT_AMT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PCT",
+     "OP_DLYS_MDCR_STDZD_PYMT_PC",
+     "OP_DLYS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_OP_DLYS_CNT",
+     "BENES_OP_DLYS_PCT",
+     "OP_DLYS_VISITS_PER_1000_BENES",
+     "FQHC_RHC_MDCR_PYMT_AMT",
+     "FQHC_RHC_MDCR_PYMT_PCT",
+     "FQHC_RHC_MDCR_PYMT_PC",
+     "FQHC_RHC_MDCR_PYMT_PER_USER",
+     "FQHC_RHC_MDCR_STDZD_PYMT_AMT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PCT",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PC",
+     "FQHC_RHC_MDCR_STDZD_PYMT_PU",
+     "BENES_FQHC_RHC_CNT",
+     "BENES_FQHC_RHC_PCT",
+     "FQHC_RHC_VISITS_PER_1000_BENES",
+     "AMBLNC_MDCR_PYMT_AMT",
+     "AMBLNC_MDCR_PYMT_PCT",
+     "AMBLNC_MDCR_PYMT_PC",
+     "AMBLNC_MDCR_PYMT_PER_USER",
+     "AMBLNC_MDCR_STDZD_PYMT_AMT",
+     "AMBLNC_MDCR_STDZD_PYMT_PCT",
+     "AMBLNC_MDCR_STDZD_PYMT_PC",
+     "AMBLNC_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_AMBLNC_CNT",
+     "BENES_AMBLNC_PCT",
+     "AMBLNC_EVNTS_PER_1000_BENES",
+     "TRTMNTS_MDCR_PYMT_AMT",
+     "TRTMNTS_MDCR_PYMT_PCT",
+     "TRTMNTS_MDCR_PYMT_PC",
+     "TRTMNTS_MDCR_PYMT_PER_USER",
+     "TRTMNTS_MDCR_STDZD_PYMT_AMT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PCT",
+     "TRTMNTS_MDCR_STDZD_PYMT_PC",
+     "TRTMNTS_MDCR_STDZD_PYMT_PER_USER",
+     "BENES_TRTMNTS_CNT",
+     "BENES_TRTMNTS_PCT",
+     "TRTMNTS_EVNTS_PER_1000_BENES",
+     "PTB_OTHR_SRVCS_MDCR_PYMT_AMT",
+     "PTB_OTHR_SRVCS_MDCR_STDZD_PYMT",
+     "TOT_PBPMT_RDCTN_AMT",
+     "TOT_PBPMT_RDCTN_PCC",
+     "PQI03_DBTS_AGE_LT_65",
+     "PQI03_DBTS_AGE_65_74",
+     "PQI03_DBTS_AGE_GE_75",
+     "PQI05_COPD_ASTHMA_AGE_40_64",
+     "PQI05_COPD_ASTHMA_AGE_65_74",
+     "PQI05_COPD_ASTHMA_AGE_GE_75",
+     "PQI07_HYPRTNSN_AGE_LT_65",
+     "PQI07_HYPRTNSN_AGE_65_74",
+     "PQI07_HYPRTNSN_AGE_GE_75",
+     "PQI08_CHF_AGE_LT_65",
+     "PQI08_CHF_AGE_65_74",
+     "PQI08_CHF_AGE_GE_75",
+     "PQI11_BCTRL_PNA_AGE_LT_65",
+     "PQI11_BCTRL_PNA_AGE_65_74",
+     "PQI11_BCTRL_PNA_AGE_GE_75",
+     "PQI12_UTI_AGE_LT_65",
+     "PQI12_UTI_AGE_65_74",
+     "PQI12_UTI_AGE_GE_75",
+     "PQI15_ASTHMA_AGE_LT_40",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_LT_65",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_65_74",
+     "PQI16_LWRXTRMTY_AMPUTN_AGE_GE_75"
+    ]
+   },
+   "cdc_places_county": {
+    "release_state": "not landed in this run (the run stopped before reaching this source)",
+    "current_release": null,
+    "previous_release": "fixture-2025-12-04",
+    "current_header": null,
+    "previous_header": [
+     "Year",
+     "StateAbbr",
+     "StateDesc",
+     "LocationName",
+     "DataSource",
+     "Category",
+     "Measure",
+     "Data_Value_Unit",
+     "Data_Value_Type",
+     "Data_Value",
+     "Data_Value_Footnote_Symbol",
+     "Data_Value_Footnote",
+     "Low_Confidence_Limit",
+     "High_Confidence_Limit",
+     "TotalPopulation",
+     "TotalPop18plus",
+     "LocationID",
+     "CategoryID",
+     "MeasureId",
+     "DataValueTypeID",
+     "Short_Question_Text",
+     "Geolocation"
+    ]
+   }
+  },
+  "profiles": {
+   "cms_geo_variation": {
+    "current_release": "2026-10-15",
+    "current": {
+     "_rows": 408,
+     "YEAR": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 4,
+      "non_numeric": 0,
+      "min": 2021,
+      "median": 2022,
+      "mean": 2022.13,
+      "max": 2024
+     },
+     "BENE_GEO_LVL": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 3,
+      "values": {
+       "County": 355,
+       "State": 45,
+       "National": 8
+      }
+     },
+     "BENE_GEO_DESC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 140,
+      "examples": [
+       "AK",
+       "AK-Aleutians East",
+       "AK-Aleutians West"
+      ]
+     },
+     "BENE_GEO_CD": {
+      "present": true,
+      "nulls": 8,
+      "distinct": 139,
+      "pattern": "^[0-9]{2}([0-9]{3})?$",
+      "pattern_violations": 0,
+      "examples": [
+       "02",
+       "02000",
+       "02013"
+      ]
+     },
+     "BENE_AGE_LVL": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 3,
+      "values": {
+       "All": 373,
+       "<65": 18,
+       ">=65": 17
+      }
+     },
+     "BENES_TOTAL_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 388,
+      "sentinels": {
+       "*": 19
+      },
+      "non_numeric": 0,
+      "min": 12,
+      "median": 24912,
+      "mean": 998207,
+      "max": 71035700
+     },
+     "BENES_WTH_PTAPTB_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 353,
+      "sentinels": {
+       "*": 54
+      },
+      "non_numeric": 0,
+      "min": 97,
+      "median": 27203,
+      "mean": 952595,
+      "max": 61410100
+     },
+     "BENES_OM_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 387,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 47,
+      "median": 10184.5,
+      "mean": 431725,
+      "max": 30900400
+     },
+     "BENES_MA_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 348,
+      "sentinels": {
+       "*": 54
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 13840.5,
+      "mean": 479459,
+      "max": 33678000
+     },
+     "MA_PRTCPTN_RATE": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 341,
+      "sentinels": {
+       "*": 54
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.52655,
+      "mean": 0.490544,
+      "max": 0.7949
+     },
+     "BENE_AVG_AGE": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 14,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 50,
+      "median": 72,
+      "mean": 71.5747,
+      "max": 77
+     },
+     "BENE_FEML_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 307,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 0.4071,
+      "median": 0.5374,
+      "mean": 0.528116,
+      "max": 0.5745
+     },
+     "BENE_RACE_WHT_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 279,
+      "sentinels": {
+       "*": 108
+      },
+      "non_numeric": 0,
+      "min": 0.2198,
+      "median": 0.9111,
+      "mean": 0.856996,
+      "max": 0.9784
+     },
+     "BENE_RACE_BLACK_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 230,
+      "sentinels": {
+       "*": 108
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.0171,
+      "mean": 0.035863,
+      "max": 0.3476
+     },
+     "BENE_RACE_HSPNC_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 226,
+      "sentinels": {
+       "*": 108
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.01685,
+      "mean": 0.0270377,
+      "max": 0.1527
+     },
+     "BENE_DUAL_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 358,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 0.0547,
+      "median": 0.1475,
+      "mean": 0.186452,
+      "max": 0.7843
+     },
+     "TOT_MDCR_PYMT_AMT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 292050,
+      "median": 117124000,
+      "mean": 5263710000,
+      "max": 377310000000
+     },
+     "TOT_MDCR_STDZD_PYMT_AMT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 246162,
+      "median": 107773000,
+      "mean": 4838370000,
+      "max": 348129000000
+     },
+     "TOT_MDCR_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 5035.34,
+      "median": 11453.8,
+      "mean": 11710.4,
+      "max": 32264
+     },
+     "TOT_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 4053.78,
+      "median": 10695.5,
+      "mean": 10520.6,
+      "max": 21304.3
+     },
+     "IP_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 385,
+      "sentinels": {
+       "*": 24
+      },
+      "non_numeric": 0,
+      "min": 812.38,
+      "median": 2683.24,
+      "mean": 2669.4,
+      "max": 4812.26
+     },
+     "OP_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 872.94,
+      "median": 2414.03,
+      "mean": 2633.75,
+      "max": 12334.4
+     },
+     "SNF_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 359,
+      "sentinels": {
+       "*": 44
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 713.085,
+      "mean": 763.549,
+      "max": 3643.62
+     },
+     "HH_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 352,
+      "sentinels": {
+       "*": 56
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 413.07,
+      "mean": 411.573,
+      "max": 750.86
+     },
+     "HOSPC_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 340,
+      "sentinels": {
+       "*": 54
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 291.59,
+      "mean": 279.87,
+      "max": 655
+     },
+     "EM_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 387,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 258.91,
+      "median": 1019.02,
+      "mean": 968.004,
+      "max": 1515.48
+     },
+     "IP_CVRD_STAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 385,
+      "sentinels": {
+       "*": 24
+      },
+      "non_numeric": 0,
+      "min": 51.5873,
+      "median": 223.165,
+      "mean": 217.981,
+      "max": 462.054
+     },
+     "IP_CVRD_DAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 385,
+      "sentinels": {
+       "*": 24
+      },
+      "non_numeric": 0,
+      "min": 202.381,
+      "median": 1210.79,
+      "mean": 1241.54,
+      "max": 2509.71
+     },
+     "BENES_IP_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 292,
+      "sentinels": {
+       "*": 24
+      },
+      "non_numeric": 0,
+      "min": 0.0516,
+      "median": 0.14475,
+      "mean": 0.141242,
+      "max": 0.2433
+     },
+     "ACUTE_HOSP_READMSN_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 296,
+      "sentinels": {
+       "*": 37
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.1748,
+      "mean": 0.171937,
+      "max": 0.2694
+     },
+     "ER_VISITS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 37.182,
+      "median": 549.39,
+      "mean": 539.642,
+      "max": 1115.42
+     },
+     "OP_VISITS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 1579.23,
+      "median": 5913.27,
+      "mean": 6101.47,
+      "max": 14455.3
+     },
+     "SNF_CVRD_STAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 361,
+      "sentinels": {
+       "*": 44
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 54.7005,
+      "mean": 53.4878,
+      "max": 111.37
+     },
+     "HH_EPISODES_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 353,
+      "sentinels": {
+       "*": 56
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 209.886,
+      "mean": 210.195,
+      "max": 380.106
+     },
+     "EM_EVNTS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 389,
+      "sentinels": {
+       "*": 20
+      },
+      "non_numeric": 0,
+      "min": 3625.17,
+      "median": 12958.9,
+      "mean": 12429.9,
+      "max": 19240.8
+     },
+     "BENES_HOSPC_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 183,
+      "sentinels": {
+       "*": 54
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.02475,
+      "mean": 0.0232508,
+      "max": 0.0397
+     },
+     "PQI03_DBTS_AGE_LT_65": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 18,
+      "sentinels": {
+       "NA": 372
+      },
+      "non_numeric": 0,
+      "min": 361,
+      "median": 668,
+      "mean": 657.944,
+      "max": 947
+     },
+     "PQI03_DBTS_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 18,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 118,
+      "median": 176,
+      "mean": 173.2,
+      "max": 224
+     },
+     "PQI03_DBTS_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 18,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 139,
+      "median": 163,
+      "mean": 172.457,
+      "max": 233
+     },
+     "PQI05_COPD_ASTHMA_AGE_40_64": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 372
+      },
+      "non_numeric": 0,
+      "min": 296,
+      "median": 571,
+      "mean": 552,
+      "max": 771
+     },
+     "PQI05_COPD_ASTHMA_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 91,
+      "median": 289,
+      "mean": 272.429,
+      "max": 409
+     },
+     "PQI05_COPD_ASTHMA_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 170,
+      "median": 365,
+      "mean": 350.143,
+      "max": 487
+     },
+     "PQI08_CHF_AGE_LT_65": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 372
+      },
+      "non_numeric": 0,
+      "min": 480,
+      "median": 1032.5,
+      "mean": 995.056,
+      "max": 1370
+     },
+     "PQI08_CHF_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 374,
+      "median": 633,
+      "mean": 595,
+      "max": 731
+     },
+     "PQI08_CHF_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 19,
+      "sentinels": {
+       "NA": 373
+      },
+      "non_numeric": 0,
+      "min": 1025,
+      "median": 1920,
+      "mean": 1889.94,
+      "max": 2436
+     },
+     "NEW_MDCR_MEASURE_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 1,
+      "values": {
+       "0": 408
+      }
+     }
+    },
+    "previous": {
+     "_rows": 583,
+     "YEAR": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 4,
+      "non_numeric": 0,
+      "min": 2021,
+      "median": 2023,
+      "mean": 2022.5,
+      "max": 2024
+     },
+     "BENE_GEO_LVL": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 3,
+      "values": {
+       "County": 499,
+       "State": 72,
+       "National": 12
+      }
+     },
+     "BENE_GEO_DESC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 140,
+      "examples": [
+       "AK",
+       "AK-Aleutians East",
+       "AK-Aleutians West"
+      ]
+     },
+     "BENE_GEO_CD": {
+      "present": true,
+      "nulls": 12,
+      "distinct": 139,
+      "pattern": "^[0-9]{2}([0-9]{3})?$",
+      "pattern_violations": 0,
+      "examples": [
+       "02",
+       "02000",
+       "02013"
+      ]
+     },
+     "BENE_AGE_LVL": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 3,
+      "values": {
+       "All": 527,
+       "<65": 28,
+       ">=65": 28
+      }
+     },
+     "BENES_TOTAL_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 546,
+      "sentinels": {
+       "*": 29
+      },
+      "non_numeric": 0,
+      "min": 12,
+      "median": 24234.5,
+      "mean": 1096670,
+      "max": 71035700
+     },
+     "BENES_WTH_PTAPTB_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 493,
+      "sentinels": {
+       "*": 89
+      },
+      "non_numeric": 0,
+      "min": 96,
+      "median": 27775,
+      "mean": 1067530,
+      "max": 61410100
+     },
+     "BENES_OM_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 546,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 47,
+      "median": 10162,
+      "mean": 463478,
+      "max": 30900400
+     },
+     "BENES_MA_CNT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 471,
+      "sentinels": {
+       "*": 89
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 13840.5,
+      "mean": 548763,
+      "max": 33678000
+     },
+     "MA_PRTCPTN_RATE": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 469,
+      "sentinels": {
+       "*": 89
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.52455,
+      "mean": 0.46423,
+      "max": 0.7949
+     },
+     "BENE_AVG_AGE": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 16,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 50,
+      "median": 73,
+      "mean": 71.5533,
+      "max": 77
+     },
+     "BENE_FEML_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 419,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 0.4016,
+      "median": 0.5353,
+      "mean": 0.523407,
+      "max": 0.5745
+     },
+     "BENE_RACE_WHT_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 369,
+      "sentinels": {
+       "*": 177
+      },
+      "non_numeric": 0,
+      "min": 0.2198,
+      "median": 0.89465,
+      "mean": 0.833451,
+      "max": 0.9784
+     },
+     "BENE_RACE_BLACK_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 296,
+      "sentinels": {
+       "*": 177
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.01945,
+      "mean": 0.0383446,
+      "max": 0.3476
+     },
+     "BENE_RACE_HSPNC_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 284,
+      "sentinels": {
+       "*": 177
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.0193,
+      "mean": 0.0293687,
+      "max": 0.1527
+     },
+     "BENE_DUAL_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 499,
+      "sentinels": {
+       "*": 32
+      },
+      "non_numeric": 0,
+      "min": 0.0547,
+      "median": 0.1571,
+      "mean": 0.201074,
+      "max": 0.7843
+     },
+     "TOT_MDCR_PYMT_AMT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 292050,
+      "median": 116007000,
+      "mean": 5777810000,
+      "max": 377310000000
+     },
+     "TOT_MDCR_STDZD_PYMT_AMT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 246162,
+      "median": 106883000,
+      "mean": 5324470000,
+      "max": 348129000000
+     },
+     "TOT_MDCR_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 5035.34,
+      "median": 11641.5,
+      "mean": 12104.4,
+      "max": 36559.8
+     },
+     "TOT_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 4053.78,
+      "median": 10792.7,
+      "mean": 10639.3,
+      "max": 26513.6
+     },
+     "IP_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 549,
+      "sentinels": {
+       "*": 35
+      },
+      "non_numeric": 0,
+      "min": 812.38,
+      "median": 2669.69,
+      "mean": 2661.56,
+      "max": 4812.26
+     },
+     "OP_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 552,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 504.9,
+      "median": 2457.34,
+      "mean": 2758.47,
+      "max": 17981.5
+     },
+     "SNF_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 488,
+      "sentinels": {
+       "*": 83
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 704.505,
+      "mean": 760.508,
+      "max": 3643.62
+     },
+     "HH_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 479,
+      "sentinels": {
+       "*": 102
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 404.93,
+      "mean": 398.272,
+      "max": 761.01
+     },
+     "HOSPC_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 458,
+      "sentinels": {
+       "*": 106
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 295.69,
+      "mean": 280.205,
+      "max": 655
+     },
+     "EM_MDCR_STDZD_PYMT_PC": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 552,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 258.91,
+      "median": 1004.31,
+      "mean": 955.51,
+      "max": 1605.67
+     },
+     "IP_CVRD_STAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 548,
+      "sentinels": {
+       "*": 35
+      },
+      "non_numeric": 0,
+      "min": 51.5873,
+      "median": 220.4,
+      "mean": 214.194,
+      "max": 462.054
+     },
+     "IP_CVRD_DAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 549,
+      "sentinels": {
+       "*": 35
+      },
+      "non_numeric": 0,
+      "min": 202.381,
+      "median": 1200.16,
+      "mean": 1235.81,
+      "max": 2513.04
+     },
+     "BENES_IP_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 381,
+      "sentinels": {
+       "*": 35
+      },
+      "non_numeric": 0,
+      "min": 0.0516,
+      "median": 0.1429,
+      "mean": 0.139084,
+      "max": 0.2433
+     },
+     "ACUTE_HOSP_READMSN_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 386,
+      "sentinels": {
+       "*": 72
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.1738,
+      "mean": 0.17234,
+      "max": 0.2694
+     },
+     "ER_VISITS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 37.182,
+      "median": 549.426,
+      "mean": 533.111,
+      "max": 1168.9
+     },
+     "OP_VISITS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 1252.92,
+      "median": 5771.31,
+      "mean": 5964.65,
+      "max": 14455.3
+     },
+     "SNF_CVRD_STAYS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 491,
+      "sentinels": {
+       "*": 83
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 52.692,
+      "mean": 50.698,
+      "max": 111.37
+     },
+     "HH_EPISODES_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 480,
+      "sentinels": {
+       "*": 102
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 205.171,
+      "mean": 202.089,
+      "max": 380.106
+     },
+     "EM_EVNTS_PER_1000_BENES": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 554,
+      "sentinels": {
+       "*": 30
+      },
+      "non_numeric": 0,
+      "min": 3625.17,
+      "median": 12789,
+      "mean": 12292,
+      "max": 20825.3
+     },
+     "BENES_HOSPC_PCT": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 221,
+      "sentinels": {
+       "*": 106
+      },
+      "non_numeric": 0,
+      "min": 0,
+      "median": 0.0248,
+      "mean": 0.0229254,
+      "max": 0.0397
+     },
+     "PQI03_DBTS_AGE_LT_65": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 25,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 361,
+      "median": 683,
+      "mean": 686.536,
+      "max": 1020
+     },
+     "PQI03_DBTS_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 26,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 101,
+      "median": 174,
+      "mean": 170.036,
+      "max": 224
+     },
+     "PQI03_DBTS_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 27,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 101,
+      "median": 175.5,
+      "mean": 173.571,
+      "max": 233
+     },
+     "PQI05_COPD_ASTHMA_AGE_40_64": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 29,
+      "sentinels": {
+       "*": 2,
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 263,
+      "median": 549,
+      "mean": 520.593,
+      "max": 771
+     },
+     "PQI05_COPD_ASTHMA_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 27,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 91,
+      "median": 270.5,
+      "mean": 261,
+      "max": 409
+     },
+     "PQI05_COPD_ASTHMA_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 28,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 170,
+      "median": 363,
+      "mean": 340.821,
+      "max": 487
+     },
+     "PQI08_CHF_AGE_LT_65": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 29,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 480,
+      "median": 1033,
+      "mean": 1011.18,
+      "max": 1370
+     },
+     "PQI08_CHF_AGE_65_74": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 29,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 364,
+      "median": 578,
+      "mean": 570.179,
+      "max": 731
+     },
+     "PQI08_CHF_AGE_GE_75": {
+      "present": true,
+      "nulls": 0,
+      "distinct": 29,
+      "sentinels": {
+       "NA": 527
+      },
+      "non_numeric": 0,
+      "min": 1025,
+      "median": 1892,
+      "mean": 1831.96,
+      "max": 2436
+     },
+     "NEW_MDCR_MEASURE_PC": {
+      "present": false
+     }
+    },
+    "previous_release": "fixture-2026-05-15"
+   }
+  },
+  "releases": {
+   "cms_geo_variation": [
+    {
+     "release_id": "fixture-2026-05-15",
+     "row_count": 583,
+     "contract_status": "pass",
+     "suppression_rate": 0.051458,
+     "bytes": 905369,
+     "landed_at": "2026-10-19T00:36:27",
+     "accepted_at": "2026-10-19T00:36:28.285717",
+     "published_at": "2026-10-19T00:36:38.421652",
+     "is_current": true
+    },
+    {
+     "release_id": "2026-10-15",
+     "row_count": 408,
+     "contract_status": "fail",
+     "suppression_rate": 0.04902,
+     "bytes": 644506,
+     "landed_at": "2026-10-19T00:37:50",
+     "accepted_at": null,
+     "published_at": null,
+     "is_current": false
+    }
+   ],
+   "cdc_places_county": [
+    {
+     "release_id": "fixture-2025-12-04",
+     "row_count": 4910,
+     "contract_status": "pass",
+     "suppression_rate": 0,
+     "bytes": 1168459,
+     "landed_at": "2026-10-19T00:36:28",
+     "accepted_at": "2026-10-19T00:36:28.900566",
+     "published_at": "2026-10-19T00:36:38.430661",
+     "is_current": true
+    }
+   ]
+  },
+  "publish_state": {
+   "served_run_id": "20261019T003627Z-5de732",
+   "served_releases": {
+    "cdc_places_county": "fixture-2025-12-04",
+    "cms_geo_variation": "fixture-2026-05-15"
+   },
+   "published_at": "2026-10-19T00:36:38+00:00",
+   "this_run_is_served": false,
+   "write_audit_publish": "Consumers only see a run after its dbt audit passes; a blocked or failed run leaves the previously published gold layer in place."
+  },
+  "logs": {
+   "validate:cms_geo_variation": "PipelineBlocked: [contract] cms_geo_variation: contract FAIL - header.drift_vs_previous_release=warn: added: NEW_MDCR_MEASURE_PC; removed: -; volume.row_count=fail: 408 rows outside expected range; volume.change_vs_previous_release=fail: row count changed 30.0%"
+  }
+ }
+}

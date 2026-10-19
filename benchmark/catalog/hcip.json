@@ -1,0 +1,772 @@
+{
+ "platform": "hcip",
+ "sources": [
+  "cms_geo_variation",
+  "cdc_places_county"
+ ],
+ "contracts": {
+  "cdc_places_county": {
+   "contract_version": 1,
+   "source": "cdc_places_county",
+   "owner": "data-platform",
+   "grain": [
+    "Year",
+    "LocationID",
+    "MeasureId",
+    "DataValueTypeID"
+   ],
+   "sentinels": {},
+   "policy": {
+    "unknown_columns": "warn",
+    "row_error_budget": 0.005,
+    "max_row_change_pct": 20,
+    "suppression": {
+     "column": "Data_Value",
+     "max_rate": 0.01,
+     "max_increase": 0.005
+    }
+   },
+   "columns": {
+    "Year": {
+     "type": "integer",
+     "nullable": false,
+     "min": 2015,
+     "max": 2100
+    },
+    "StateAbbr": {
+     "type": "string",
+     "nullable": false,
+     "pattern": "^[A-Z]{2}$"
+    },
+    "StateDesc": {
+     "type": "string",
+     "nullable": false
+    },
+    "LocationName": {
+     "type": "string",
+     "nullable": true
+    },
+    "DataSource": {
+     "type": "string",
+     "nullable": false
+    },
+    "Category": {
+     "type": "string",
+     "nullable": false
+    },
+    "Measure": {
+     "type": "string",
+     "nullable": false
+    },
+    "Data_Value_Unit": {
+     "type": "string",
+     "nullable": false,
+     "accepted_values": [
+      "%"
+     ]
+    },
+    "Data_Value_Type": {
+     "type": "string",
+     "nullable": false
+    },
+    "Data_Value": {
+     "type": "decimal",
+     "nullable": true,
+     "min": 0,
+     "max": 100
+    },
+    "Data_Value_Footnote_Symbol": {
+     "type": "string",
+     "nullable": true
+    },
+    "Low_Confidence_Limit": {
+     "type": "decimal",
+     "nullable": true,
+     "min": 0,
+     "max": 100
+    },
+    "High_Confidence_Limit": {
+     "type": "decimal",
+     "nullable": true,
+     "min": 0,
+     "max": 100
+    },
+    "TotalPopulation": {
+     "type": "integer",
+     "nullable": true,
+     "min": 0
+    },
+    "TotalPop18plus": {
+     "type": "integer",
+     "nullable": true,
+     "min": 0
+    },
+    "LocationID": {
+     "type": "string",
+     "nullable": false,
+     "pattern": "^([0-9]{5}|59)$"
+    },
+    "CategoryID": {
+     "type": "string",
+     "nullable": false
+    },
+    "MeasureId": {
+     "type": "string",
+     "nullable": false,
+     "pattern": "^[A-Z0-9_]+$"
+    },
+    "DataValueTypeID": {
+     "type": "string",
+     "nullable": false,
+     "accepted_values": [
+      "AgeAdjPrv",
+      "CrdPrv"
+     ]
+    },
+    "Short_Question_Text": {
+     "type": "string",
+     "nullable": false
+    }
+   }
+  },
+  "cms_geo_variation": {
+   "contract_version": 1,
+   "source": "cms_geo_variation",
+   "owner": "data-platform",
+   "grain": [
+    "YEAR",
+    "BENE_GEO_LVL",
+    "BENE_GEO_DESC",
+    "BENE_AGE_LVL"
+   ],
+   "sentinels": {
+    "*": "suppressed",
+    "NA": "not_applicable"
+   },
+   "policy": {
+    "unknown_columns": "warn",
+    "row_error_budget": 0.005,
+    "max_row_change_pct": 20,
+    "suppression": {
+     "column": "TOT_MDCR_STDZD_PYMT_PC",
+     "max_rate": 0.1,
+     "max_increase": 0.02
+    }
+   },
+   "columns": {
+    "YEAR": {
+     "type": "integer",
+     "nullable": false,
+     "min": 2007,
+     "max": 2100
+    },
+    "BENE_GEO_LVL": {
+     "type": "string",
+     "nullable": false,
+     "accepted_values": [
+      "National",
+      "State",
+      "County"
+     ]
+    },
+    "BENE_GEO_DESC": {
+     "type": "string",
+     "nullable": false
+    },
+    "BENE_GEO_CD": {
+     "type": "string",
+     "nullable": true,
+     "pattern": "^[0-9]{2}([0-9]{3})?$"
+    },
+    "BENE_AGE_LVL": {
+     "type": "string",
+     "nullable": false,
+     "accepted_values": [
+      "All",
+      "<65",
+      ">=65"
+     ]
+    },
+    "BENES_TOTAL_CNT": {
+     "type": "integer",
+     "min": 0
+    },
+    "BENES_WTH_PTAPTB_CNT": {
+     "type": "integer",
+     "min": 0
+    },
+    "BENES_OM_CNT": {
+     "type": "integer",
+     "min": 0
+    },
+    "BENES_MA_CNT": {
+     "type": "integer",
+     "min": 0
+    },
+    "MA_PRTCPTN_RATE": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "BENE_AVG_AGE": {
+     "type": "decimal",
+     "min": 0,
+     "max": 120
+    },
+    "BENE_FEML_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "BENE_RACE_WHT_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "BENE_RACE_BLACK_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "BENE_RACE_HSPNC_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "BENE_DUAL_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "TOT_MDCR_PYMT_AMT": {
+     "type": "decimal",
+     "min": 0
+    },
+    "TOT_MDCR_STDZD_PYMT_AMT": {
+     "type": "decimal",
+     "min": 0
+    },
+    "TOT_MDCR_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "TOT_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "IP_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "OP_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "SNF_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "HH_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "HOSPC_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "EM_MDCR_STDZD_PYMT_PC": {
+     "type": "decimal",
+     "min": 0
+    },
+    "IP_CVRD_STAYS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "IP_CVRD_DAYS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "BENES_IP_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "ACUTE_HOSP_READMSN_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "ER_VISITS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "OP_VISITS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "SNF_CVRD_STAYS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "HH_EPISODES_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "EM_EVNTS_PER_1000_BENES": {
+     "type": "decimal",
+     "min": 0
+    },
+    "BENES_HOSPC_PCT": {
+     "type": "decimal",
+     "min": 0,
+     "max": 1
+    },
+    "PQI03_DBTS_AGE_LT_65": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI03_DBTS_AGE_65_74": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI03_DBTS_AGE_GE_75": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI05_COPD_ASTHMA_AGE_40_64": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI05_COPD_ASTHMA_AGE_65_74": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI05_COPD_ASTHMA_AGE_GE_75": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI08_CHF_AGE_LT_65": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI08_CHF_AGE_65_74": {
+     "type": "decimal",
+     "min": 0
+    },
+    "PQI08_CHF_AGE_GE_75": {
+     "type": "decimal",
+     "min": 0
+    }
+   }
+  }
+ },
+ "lineage": {
+  "nodes": {
+   "bronze.cms_geo_variation": {
+    "type": "source",
+    "layer": "bronze",
+    "description": "CMS Medicare Geographic Variation Public Use File (national, state, county; 2014 onward). One row per year x geography level x geography x age group. Original Medicare (FFS) only.\n"
+   },
+   "bronze.cdc_places_county": {
+    "type": "source",
+    "layer": "bronze",
+    "description": "CDC PLACES county estimates (model-based small-area estimates from BRFSS), long format: one row per county x measure x value type (crude / age-adjusted prevalence).\n"
+   },
+   "dim_geography": {
+    "type": "model",
+    "layer": "gold",
+    "description": "Conformed geography dimension (national, state, county-equivalent) shared by CMS and CDC, with geography-vintage tracking: the years CMS reported each code, whether it is still current, and the documented change (rename, split, Connecticut "
+   },
+   "dim_measure": {
+    "type": "model",
+    "layer": "gold",
+    "description": "Measure catalog across both sources with units and definitions."
+   },
+   "fct_medicare_geo_year": {
+    "type": "model",
+    "layer": "gold",
+    "description": "Medicare FFS cost and utilization by year x geography x age group (2014 onward). All per-capita and per-1,000 measures use Original Medicare (FFS) beneficiaries as the denominator.\n"
+   },
+   "fct_population_health": {
+    "type": "model",
+    "layer": "gold",
+    "description": "CDC PLACES estimates by geography x measure x value type x data year."
+   },
+   "mart_county_cost_health": {
+    "type": "model",
+    "layer": "gold",
+    "description": "Analysis-ready county profile for var('analysis_year'): Medicare FFS cost and utilization next to age-adjusted PLACES prevalence. Every CMS county is present; `cohort_status` records why a county is in or out of the analysis cohort. Associa"
+   },
+   "mart_state_year": {
+    "type": "model",
+    "layer": "gold",
+    "description": "State and national trends (2014 onward) including AHRQ Prevention Quality Indicators."
+   },
+   "silver_cdc_places_county": {
+    "type": "model",
+    "layer": "silver",
+    "description": "Validated PLACES rows. Grain is geography_key x measure_id x value_type_id x data_year."
+   },
+   "silver_cms_geo_variation": {
+    "type": "model",
+    "layer": "silver",
+    "description": "Validated CMS rows. Grain is year x geo_level x geography_key x age_group."
+   },
+   "silver_quarantine": {
+    "type": "model",
+    "layer": "silver",
+    "description": "Rows that failed a row-level rule, from either source, with every reason and the bronze line number (source_line) to trace them back. Governed by an error budget (tests/assert_quarantine_within_budget.sql)."
+   },
+   "stg_cdc__places_county": {
+    "type": "model",
+    "layer": "silver",
+    "description": "CDC PLACES county rows for one pinned release: typed values, conformed keys, and a `dq_errors` list per row. View; not consumed directly.\n"
+   },
+   "stg_cms__geo_variation": {
+    "type": "model",
+    "layer": "silver",
+    "description": "CMS Geographic Variation rows for one pinned release: typed (sentinels \"*\" and \"NA\" become NULL), conformed keys (geography_key, state_fips), and a `dq_errors` list per row. View; not consumed directly.\n"
+   },
+   "ref_cms_measures": {
+    "type": "seed",
+    "layer": "reference",
+    "description": ""
+   },
+   "ref_geography_changes": {
+    "type": "seed",
+    "layer": "reference",
+    "description": ""
+   },
+   "ref_states": {
+    "type": "seed",
+    "layer": "reference",
+    "description": ""
+   }
+  },
+  "edges": [
+   [
+    "bronze.cdc_places_county",
+    "stg_cdc__places_county"
+   ],
+   [
+    "bronze.cms_geo_variation",
+    "stg_cms__geo_variation"
+   ],
+   [
+    "dim_geography",
+    "mart_county_cost_health"
+   ],
+   [
+    "dim_geography",
+    "mart_state_year"
+   ],
+   [
+    "fct_medicare_geo_year",
+    "mart_county_cost_health"
+   ],
+   [
+    "fct_medicare_geo_year",
+    "mart_state_year"
+   ],
+   [
+    "fct_population_health",
+    "mart_county_cost_health"
+   ],
+   [
+    "fct_population_health",
+    "mart_state_year"
+   ],
+   [
+    "ref_cms_measures",
+    "dim_measure"
+   ],
+   [
+    "ref_cms_measures",
+    "stg_cms__geo_variation"
+   ],
+   [
+    "ref_geography_changes",
+    "dim_geography"
+   ],
+   [
+    "ref_states",
+    "dim_geography"
+   ],
+   [
+    "silver_cdc_places_county",
+    "dim_geography"
+   ],
+   [
+    "silver_cdc_places_county",
+    "dim_measure"
+   ],
+   [
+    "silver_cdc_places_county",
+    "fct_population_health"
+   ],
+   [
+    "silver_cms_geo_variation",
+    "dim_geography"
+   ],
+   [
+    "silver_cms_geo_variation",
+    "fct_medicare_geo_year"
+   ],
+   [
+    "stg_cdc__places_county",
+    "silver_cdc_places_county"
+   ],
+   [
+    "stg_cdc__places_county",
+    "silver_quarantine"
+   ],
+   [
+    "stg_cms__geo_variation",
+    "silver_cms_geo_variation"
+   ],
+   [
+    "stg_cms__geo_variation",
+    "silver_quarantine"
+   ]
+  ],
+  "tests": {
+   "accepted_values_dim_geography_geo_level__national__state__county": [
+    "dim_geography"
+   ],
+   "accepted_values_dim_geography_vintage_status__current__retired": [
+    "dim_geography"
+   ],
+   "accepted_values_silver_cdc_places_county_value_type_id__AgeAdjPrv__CrdPrv": [
+    "silver_cdc_places_county"
+   ],
+   "accepted_values_silver_cms_geo_variation_age_group__All___65___65": [
+    "silver_cms_geo_variation"
+   ],
+   "accepted_values_silver_cms_geo_variation_geo_level__national__state__county": [
+    "silver_cms_geo_variation"
+   ],
+   "assert_analysis_cohort_is_substantial": [
+    "mart_county_cost_health"
+   ],
+   "assert_county_totals_reconcile_to_state": [
+    "silver_cms_geo_variation"
+   ],
+   "assert_per_capita_matches_totals": [
+    "silver_cms_geo_variation"
+   ],
+   "assert_quarantine_within_budget": [
+    "silver_quarantine",
+    "stg_cdc__places_county",
+    "stg_cms__geo_variation"
+   ],
+   "not_null_mart_county_cost_health_cohort_status": [
+    "mart_county_cost_health"
+   ],
+   "not_null_mart_county_cost_health_county_fips": [
+    "mart_county_cost_health"
+   ],
+   "not_null_silver_cdc_places_county_geography_key": [
+    "silver_cdc_places_county"
+   ],
+   "not_null_silver_cms_geo_variation_geo_level": [
+    "silver_cms_geo_variation"
+   ],
+   "not_null_silver_cms_geo_variation_geography_key": [
+    "silver_cms_geo_variation"
+   ],
+   "not_null_silver_cms_geo_variation_year": [
+    "silver_cms_geo_variation"
+   ],
+   "relationships_fct_medicare_geo_year_geography_key__geography_key__ref_dim_geography_": [
+    "dim_geography",
+    "fct_medicare_geo_year"
+   ],
+   "relationships_fct_population_health_geography_key__geography_key__ref_dim_geography_": [
+    "dim_geography",
+    "fct_population_health"
+   ],
+   "relationships_fct_population_health_measure_id__measure_id__ref_dim_measure_": [
+    "dim_measure",
+    "fct_population_health"
+   ],
+   "row_count_at_least_silver_cdc_places_county_100": [
+    "silver_cdc_places_county"
+   ],
+   "row_count_at_least_silver_cms_geo_variation_100": [
+    "silver_cms_geo_variation"
+   ],
+   "unique_combination_fct_medicare_geo_year_year__geography_key__age_group": [
+    "fct_medicare_geo_year"
+   ],
+   "unique_combination_fct_population_health_geography_key__measure_id__value_type_id__data_year": [
+    "fct_population_health"
+   ],
+   "unique_combination_mart_state_year_year__geography_key": [
+    "mart_state_year"
+   ],
+   "unique_combination_silver_cdc_places_county_geography_key__measure_id__value_type_id__data_year": [
+    "silver_cdc_places_county"
+   ],
+   "unique_combination_silver_cms_geo_variation_year__geo_level__geography_key__age_group": [
+    "silver_cms_geo_variation"
+   ],
+   "unique_dim_geography_geography_key": [
+    "dim_geography"
+   ],
+   "unique_dim_measure_measure_key": [
+    "dim_measure"
+   ],
+   "unique_mart_county_cost_health_county_fips": [
+    "mart_county_cost_health"
+   ],
+   "value_between_fct_medicare_geo_year_geographic_price_index__3_0__0_5": [
+    "fct_medicare_geo_year"
+   ],
+   "value_between_mart_county_cost_health_diabetes_quintile__5__1": [
+    "mart_county_cost_health"
+   ],
+   "value_between_silver_cdc_places_county_value_pct__100__0": [
+    "silver_cdc_places_county"
+   ],
+   "value_between_silver_cms_geo_variation_ma_participation_rate__1__0": [
+    "silver_cms_geo_variation"
+   ],
+   "value_between_silver_cms_geo_variation_std_payment_per_capita__200000__0": [
+    "silver_cms_geo_variation"
+   ],
+   "warn_rows_in_quarantine": [
+    "silver_quarantine"
+   ]
+  }
+ },
+ "consumers": [
+  {
+   "name": "Public dashboard (GitHub Pages)",
+   "reads": [
+    "gold.mart_county_cost_health",
+    "silver.silver_quarantine"
+   ],
+   "owner": "analytics"
+  },
+  {
+   "name": "Findings report (docs/FINDINGS.md, reports/findings.json)",
+   "reads": [
+    "gold.mart_county_cost_health",
+    "gold.mart_state_year"
+   ],
+   "owner": "analytics"
+  }
+ ],
+ "knowledge": [
+  {
+   "doc": "docs/runbook.md",
+   "section": "Daily and weekly operation",
+   "text": "- The **weekly GitHub Actions run** (`refresh-and-publish.yml`) resolves the current releases. It usually\n  ends in about 5 seconds with `no_change`, and the dashboard is rebuilt from the published layer.\n- `hcip status` shows the published run, the current releases, recent runs, and recent non-passing checks."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "When a run is blocked",
+   "text": "The previously published data is still being served. Nothing needs to be rolled back."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Blocked at `contract`",
+   "text": "1. Read the reason: `hcip status`, or `lakehouse/landing/<source>/release_id=<id>/_contract_report.json`.\n   Each failing check lists observed vs. expected values and sample offending values.\n2. Decide which side is wrong:\n   - **The source changed on purpose** (a renamed column, a new suppression policy): update\n     `contracts/<source>.yml`, and the silver model if needed, in a pull request that explains the change.\n     CI's metadata-consistency tests keep the contract and the dbt seed aligned.\n   - **The source is broken** (a truncated or malformed file): wait for the publisher to fix it, or report\n     it to them. The landed file and its manifest are the evidence.\n3. Re-run with `hcip run`. A corrected file arrives as a new release ID."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Blocked at `audit`",
+   "text": "1. `warehouse/runs/<run_id>/dbt/dbt_stdout.log` names the failing test. The candidate database\n   `warehouse/runs/<run_id>/hcip.duckdb` is kept, so you can query the offending rows directly.\n2. Reconciliation failures usually mean duplicated or dropped rows upstream. Per-capita mismatches usually\n   mean a unit or column-order change."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Rows in quarantine (warning)",
+   "text": "`SELECT * FROM silver.silver_quarantine` lists every held-back row with its reasons and its bronze\n`source_line`. Within the 0.5% budget the run publishes. Above it, the release is blocked."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Rolling back",
+   "text": "```bash\nhcip status                 # find an earlier published run_id (the last 3 are retained)\nhcip rollback <run_id>      # re-points warehouse/hcip.duckdb and lakehouse/gold/_CURRENT.json\n```"
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Adopting a new PLACES release",
+   "text": "CDC publishes each annual release as a new dataset. `hcip check-sources` lists newer releases.\n\n1. Read CDC's release notes for measure or methodology changes.\n2. Update `dataset_id` and `release_name` in `config/sources.yml`.\n3. Check whether the measure list or data years changed, and the contract with it.\n4. Regenerate fixtures if needed (`scripts/make_fixtures.py`), then open a pull request. CI runs the full\n   pipeline on the fixtures, and merging triggers the live refresh."
+  },
+  {
+   "doc": "docs/runbook.md",
+   "section": "Adding a CMS measure",
+   "text": "1. Add a row to `transform/seeds/ref_cms_measures.csv` (source column, name, type, valid range).\n2. Add the same column to `contracts/cms_geo_variation.yml`. CI fails if the two disagree.\n3. It is parsed, range-checked, and quarantined automatically in silver and available in\n   `gold.fct_medicare_geo_year`."
+  },
+  {
+   "doc": "docs/architecture.md",
+   "section": "System view",
+   "text": "```mermaid\nflowchart LR\n    subgraph Sources[\"Public sources (annual releases)\"]\n        CMS[\"CMS data.json catalog<br/>Geographic Variation PUF\"]\n        CDC[\"CDC Socrata<br/>PLACES county 2025\"]\n    end\n\n    subgraph Orchestration[\"Orchestration (same code path)\"]\n        CLI[\"hcip CLI\"]\n        AF[\"Airflow 3 DAG<br/>hcip_pipeline\"]\n        GH[\"GitHub Actions<br/>weekly refresh\"]\n    end\n\n    subgraph Lakehouse[\"Lakehouse (open formats)\"]\n        L[\"Landing<br/>immutable CSV + manifest<br/>SHA-256, origin, HTTP validators\"]\n        B[\"Bronze<br/>Parquet, all VARCHAR<br/>+ lineage columns\"]\n        G[\"Gold export<br/>Parquet per run<br/>_CURRENT.json pointer\"]\n    end\n\n    subgraph Warehouse[\"DuckDB\"]\n        C[\"Candidate DB per run<br/>silver + quarantine + gold\"]\n        P[\"Serving DB<br/>hcip.duckdb\"]\n        O[\"Run ledger<br/>ops.duckdb\"]\n    end\n\n    subgraph Consumers\n        D[\"Static dashboard<br/>GitHub Pages\"]\n        F[\"FINDINGS.md\"]\n        DD[\"dbt docs<br/>lineage\"]\n    end\n\n    CMS -- \"resolve release\" --> L\n    CDC -- \"resolve release\" --> L\n    CLI & AF & GH --> L\n    L -- \"data contract\" --> B\n    B -- \"dbt build (write)\" --> C\n    C -- \"dbt tests (audit)\" --> C\n    C -- \"publish: atomic swap\" --> P\n    C -- \"publish\" --> G\n    P --> D & F & DD\n    L & B & C & P -.-> O\n```"
+  },
+  {
+   "doc": "docs/architecture.md",
+   "section": "Run lifecycle",
+   "text": "| Step | Module | Idempotency | Failure behavior |\n| --- | --- | --- | --- |\n| Resolve release | `hcip.sources` | Read-only catalog lookup | Retries with exponential backoff on 429/5xx. A changed CDC dataset title is an error, so a new release is never adopted silently. |\n| Land | `hcip.ingest` | Skips if the release is landed and its SHA-256 verifies | Streams to `.part`, checks Content-Length, then atomic rename. A truncated download never looks valid. |\n| Validate | `hcip.contracts` | Deterministic | `fail` blocks the run (no retry). `warn` continues and the affected rows are quarantined later. |\n| Bronze | `hcip.bronze` | Skips if the sidecar's checksum matches | Written to a temp file, then renamed |\n| No-change gate | `hcip.pipeline.needs_publish` | \u2014 | Stops the run if every source is already published at its current release |\n| Transform + audit | `hcip.transform.build_candidate` (dbt) | Full rebuild of a private candidate | Any error-severity test blocks publishing. The candidate is kept for debugging. |\n| Publish | `hcip.transform.publish` | New run directory | Export, then atomic DB swap, then pointer flip last. The last 3 runs are kept for rollback. |\n| Report | `hcip.analysis`, `hcip.dashboard` | Pure function of the published DB | Never touches gold |\n\nEvery step writes to the run ledger (`warehouse/ops.duckdb`: `pipeline_runs`, `step_runs`,\n`source_releases`, `check_results`). The ledger drives `hcip status`, the no-change gate, the relative\nvolume and suppression checks, and the dashboard's data-health section."
+  },
+  {
+   "doc": "docs/architecture.md",
+   "section": "Gold data model",
+   "text": "```mermaid\nerDiagram\n    dim_geography ||--o{ fct_medicare_geo_year : \"geography_key\"\n    dim_geography ||--o{ fct_population_health : \"geography_key\"\n    dim_measure ||--o{ fct_population_health : \"measure_id\"\n    dim_geography ||--|| mart_county_cost_health : \"county_fips\"\n    dim_geography ||--o{ mart_state_year : \"geography_key\"\n\n    dim_geography {\n        varchar geography_key PK \"US / state FIPS / county FIPS\"\n        varchar geo_level\n        varchar state_abbr\n        varchar census_region\n        int cms_first_year\n        int cms_last_year\n        varchar vintage_status \"current / retired\"\n        varchar vintage_note \"rename, split, CT planning regions\"\n    }\n    dim_measure {\n        varchar measure_key PK \"cms:... / cdc:...\"\n        varchar source\n        varchar unit\n        varchar description\n    }\n    fct_medicare_geo_year {\n        int year\n        varchar geography_key FK\n        varchar age_group\n        double std_payment_per_capita\n        double geographic_price_index\n        double ip_stays_per_1000\n        double readmission_rate\n        double pqi03_diabetes_65_74\n    }\n    fct_population_health {\n        varchar geography_key FK\n        varchar measure_id FK\n        varchar value_type_id \"AgeAdjPrv / CrdPrv\"\n        int data_year\n        double value_pct\n        double ci_low_pct\n        double ci_high_pct\n    }\n    mart_county_cost_health {\n        varchar county_fips PK\n        double std_payment_per_capita\n        double diabetes_pct\n        varchar cohort_status \"explicit inclusion reason\"\n        int diabetes_quintile\n    }\n    mart_state_year {\n        int year\n        varchar geography_key\n        double ma_participation_rate\n        double pqi03_diabetes_65_74\n        double places_diabetes_crude_pct\n    }\n```\n\nFacts keep their natural grain. Neither source is pre-joined in the facts; the marts are the only place\nthe two sources meet, and each mart states its grain and analysis year in its dbt description. Full\ncolumn-level documentation and lineage are published as dbt docs alongside the dashboard."
+  },
+  {
+   "doc": "docs/architecture.md",
+   "section": "Quality gates in depth",
+   "text": "| Gate | Where | Catches | Outcome |\n| --- | --- | --- | --- |\n| Data contract (structure) | landing \u2192 bronze | missing or renamed columns, parse errors, duplicate grain, empty or truncated files, suppression-policy shifts | Block |\n| Data contract (values) | landing \u2192 bronze | type, range, pattern, and allowed-value violations | Warn within the 0.5% budget, block above it |\n| Row routing | silver (dbt) | the same rules per row, plus cross-column rules (a CI that does not bracket its value), duplicate natural keys | Quarantine with reasons and the bronze line number |\n| Schema and referential tests | silver and gold (dbt) | uniqueness, not-null, accepted values, ranges, relationships to dimensions, enforced model contracts on dimensions | Block |\n| Semantic audits | gold (dbt singular tests) | county-to-state reconciliation, per-capita = total \u00f7 beneficiaries, quarantine budget, cohort size | Block (cohort size: warn) |\n\n[fault-injection.md](fault-injection.md) shows each gate catching a realistic failure."
+  },
+  {
+   "doc": "docs/adr/0004-contracts-error-budgets-quarantine.md",
+   "section": "ADR 0004: Data contracts with error budgets and quarantine",
+   "text": "**Status:** Accepted \u00b7 **Date:** 2026-10-17"
+  },
+  {
+   "doc": "docs/adr/0004-contracts-error-budgets-quarantine.md",
+   "section": "Context",
+   "text": "Public data breaks in predictable ways: renamed or dropped columns, truncated downloads, thousands\nseparators in numeric fields, FIPS codes stripped of leading zeros by spreadsheet tools, and changes in\nsuppression policy. All-or-nothing validation is too brittle (one bad county blocks a national\nrefresh), and silent coercion is too dangerous (`'1,234'` becomes NULL and the average quietly shifts)."
+  },
+  {
+   "doc": "docs/adr/0004-contracts-error-budgets-quarantine.md",
+   "section": "Decision",
+   "text": "Validation happens at two levels, each with its own job:\n\n1. **Data contract at the landing-to-bronze boundary** (`contracts/*.yml`, enforced by `hcip.contracts` in\n   DuckDB against the landed file):\n   - **Structural failures block the release:** missing contracted columns, duplicate headers, parse\n     errors, duplicate grain, row count outside the expected range or changed by more than 20% from the\n     last accepted release, and a jump in the suppressed share.\n   - **Row-level value failures use an error budget** (0.5% of rows). Within budget, the release proceeds\n     with a warning and the rows are quarantined downstream. Over budget, the problem is systemic and the\n     release is blocked.\n   - **Schema drift is relative.** A column added since the last accepted release raises a warning, not a\n     failure, because CMS publishes about 200 columns we do not consume.\n2. **Row routing in silver** (dbt): each staging row carries a `dq_errors` list. Valid rows go to silver.\n   Invalid rows go to `silver_quarantine` with their reasons and the bronze line number. A dbt test\n   enforces the same budget, and another raises a warning whenever any row is quarantined.\n\nSemantic checks that need context run as **dbt audit tests** before publish:\n\n- County totals must reconcile to state totals (97%\u2013100%, allowing for CMS suppression).\n- Total payments \u00f7 FFS beneficiaries must equal the published per-capita figure (within 0.1%).\n- Every fact must join to the conformed dimensions."
+  },
+  {
+   "doc": "docs/adr/0004-contracts-error-budgets-quarantine.md",
+   "section": "Why",
+   "text": "- Contract failures are deterministic, so the Airflow `validate` task has `retries=0`. Retrying cannot fix\n  data.\n- The contract is the agreement with the provider, and the dbt seed `ref_cms_measures` drives silver\n  parsing. `tests/test_metadata_consistency.py` fails CI if the two disagree on any column's type or range.\n- Every rule is exercised by a fault-injection scenario ([`fault-injection.md`](../fault-injection.md))."
+  },
+  {
+   "doc": "docs/adr/0004-contracts-error-budgets-quarantine.md",
+   "section": "Consequences",
+   "text": "- Thresholds are policy, so they live in YAML and dbt vars, next to the reason for each value.\n- Contract validation scans the file once in DuckDB (about 2 s for the CMS file)."
+  },
+  {
+   "doc": "docs/adr/0005-write-audit-publish.md",
+   "section": "ADR 0005: Write-audit-publish with an atomic pointer swap and rollback",
+   "text": "**Status:** Accepted \u00b7 **Date:** 2026-10-17"
+  },
+  {
+   "doc": "docs/adr/0005-write-audit-publish.md",
+   "section": "Context",
+   "text": "A dbt build that fails its tests *after* rewriting the tables leaves consumers looking at bad or\nhalf-built data. The usual fix (test first, then build) does not work for tests that need the built\ntables, such as reconciliation, relationships, and per-capita consistency."
+  },
+  {
+   "doc": "docs/adr/0005-write-audit-publish.md",
+   "section": "Decision",
+   "text": "Every run builds into its own **candidate** database, `warehouse/runs/<run_id>/hcip.duckdb`:\n\n1. **Write:** `dbt build` creates seeds, silver, and gold in the candidate.\n2. **Audit:** the same `dbt build` runs every test. Any error-severity failure raises `AuditFailed`. The\n   candidate stays on disk for debugging and nothing else changes.\n3. **Publish** (only if the audit passed): export gold to `lakehouse/gold/runs/<run_id>/*.parquet`, copy the\n   candidate next to `warehouse/hcip.duckdb` and swap it in with an atomic rename, then rewrite\n   `lakehouse/gold/_CURRENT.json` the same way. The ledger then marks the releases as current.\n\nThe last three published runs are kept. `hcip rollback <run_id>` re-points serving at any of them."
+  },
+  {
+   "doc": "docs/adr/0005-write-audit-publish.md",
+   "section": "Evidence",
+   "text": "The `reconciliation_break` and `silent_unit_change` fault-injection scenarios pass the data contract (the\nfile is well formed) and fail only in the audit. In both cases the test asserts that `_CURRENT.json` still\npoints at the previous run."
+  },
+  {
+   "doc": "docs/adr/0005-write-audit-publish.md",
+   "section": "Consequences",
+   "text": "- Readers of `hcip.duckdb` with an open handle on Windows can block the rename. The publish then fails\n  loudly instead of serving a partial state.\n- At larger scale the same pattern maps to Delta/Iceberg branch-and-merge, Fabric deployment of a\n  validated lakehouse, or a blue/green schema swap in a warehouse."
+  }
+ ]
+}

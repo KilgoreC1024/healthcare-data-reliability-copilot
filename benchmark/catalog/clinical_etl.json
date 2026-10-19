@@ -1,0 +1,212 @@
+{
+ "platform": "clinical_etl",
+ "sources": [
+  "synthetic_fhir_bundle"
+ ],
+ "contracts": {
+  "synthetic_fhir_bundle": {
+   "source": "synthetic_fhir_bundle",
+   "format": "FHIR R4-shaped JSON Bundle (type=collection), resources Patient, Encounter, Condition",
+   "gates": {
+    "extract": "resourceType must be Bundle, type must be collection, entry must be a non-empty list of resource objects",
+    "transform": "only Patient, Encounter and Condition are supported (unknown resource types fail); required fields must be non-empty strings; Patient.gender in {male, female, other, unknown}; Patient.birthDate is YYYY-MM-DD; Encounter.period.start is ISO 8601 with a time zone; references must be '<Type>/<id>'",
+    "quality_gate": "each table non-empty; ids unique per table; every Encounter.subject and Condition.subject references an existing Patient; every Condition.encounter references an existing Encounter; a Condition's patient must equal its Encounter's patient",
+    "load": "transactional full refresh of patients, encounters, conditions in SQLite with foreign keys enforced (BEGIN IMMEDIATE)",
+    "audit": "post-load row counts must equal the validated counts; zero foreign-key violations; zero cross-patient conditions"
+   },
+   "tables": {
+    "patients": [
+     "id",
+     "birth_date",
+     "gender"
+    ],
+    "encounters": [
+     "id",
+     "patient_id",
+     "status",
+     "start_at"
+    ],
+    "conditions": [
+     "id",
+     "patient_id",
+     "encounter_id",
+     "code",
+     "description"
+    ]
+   }
+  }
+ },
+ "lineage": {
+  "nodes": {
+   "synthetic_fhir_bundle": {
+    "type": "source",
+    "layer": "landing",
+    "description": "FHIR R4-shaped JSON Bundle"
+   },
+   "task.extract": {
+    "type": "task",
+    "layer": "airflow",
+    "description": "resourceType must be Bundle, type must be collection, entry must be a non-empty list of resource objects"
+   },
+   "task.transform": {
+    "type": "task",
+    "layer": "airflow",
+    "description": "only Patient, Encounter and Condition are supported (unknown resource types fail); required fields must be non-empty strings; Patient.gender in {male, female, other, unknown}; Patient.birthDate is YYYY-MM-DD; Encounter.period.start is ISO 8601 with a time zone; references must be '<Type>/<id>'"
+   },
+   "task.quality_gate": {
+    "type": "task",
+    "layer": "airflow",
+    "description": "each table non-empty; ids unique per table; every Encounter.subject and Condition.subject references an existing Patient; every Condition.encounter references an existing Encounter; a Condition's patient must equal its Encounter's patient"
+   },
+   "task.load": {
+    "type": "task",
+    "layer": "airflow",
+    "description": "transactional full refresh of patients, encounters, conditions in SQLite with foreign keys enforced (BEGIN IMMEDIATE)"
+   },
+   "task.audit": {
+    "type": "task",
+    "layer": "airflow",
+    "description": "post-load row counts must equal the validated counts; zero foreign-key violations; zero cross-patient conditions"
+   },
+   "patients": {
+    "type": "table",
+    "layer": "sqlite",
+    "description": "id, birth_date, gender"
+   },
+   "encounters": {
+    "type": "table",
+    "layer": "sqlite",
+    "description": "id, patient_id, status, start_at"
+   },
+   "conditions": {
+    "type": "table",
+    "layer": "sqlite",
+    "description": "id, patient_id, encounter_id, code, description"
+   }
+  },
+  "edges": [
+   [
+    "synthetic_fhir_bundle",
+    "task.extract"
+   ],
+   [
+    "task.extract",
+    "task.transform"
+   ],
+   [
+    "task.transform",
+    "task.quality_gate"
+   ],
+   [
+    "task.quality_gate",
+    "task.load"
+   ],
+   [
+    "task.load",
+    "task.audit"
+   ],
+   [
+    "task.load",
+    "patients"
+   ],
+   [
+    "task.load",
+    "encounters"
+   ],
+   [
+    "task.load",
+    "conditions"
+   ]
+  ],
+  "tests": {
+   "extract.bundle_structure": [
+    "task.extract"
+   ],
+   "transform.resource_parsing": [
+    "task.transform"
+   ],
+   "quality_gate.validate_tables": [
+    "task.quality_gate"
+   ],
+   "load.transactional_refresh": [
+    "task.load"
+   ],
+   "audit.post_load": [
+    "task.audit"
+   ]
+  }
+ },
+ "consumers": [
+  {
+   "name": "Clinical demo tables (runtime/clinical_demo.sqlite)",
+   "reads": [
+    "patients",
+    "encounters",
+    "conditions"
+   ],
+   "owner": "clinical-analytics"
+  }
+ ],
+ "knowledge": [
+  {
+   "doc": "README.md",
+   "section": "Synthetic Clinical Data ETL with Apache Airflow",
+   "text": "[![ETL and Airflow checks](https://github.com/KilgoreC1024/airflow-synthetic-clinical-etl/actions/workflows/tests.yml/badge.svg)](https://github.com/KilgoreC1024/airflow-synthetic-clinical-etl/actions/workflows/tests.yml)\n\n> **Portfolio project.** An original, intentionally small Apache Airflow data engineering demonstration using **100% fictional healthcare records**. No employer code, patient information, protected health information (PHI), or credentials are included."
+  },
+  {
+   "doc": "README.md",
+   "section": "What this demonstrates",
+   "text": "- **Airflow TaskFlow API:** an observable, manually triggered DAG with explicit task dependencies and an extraction retry policy.\n- **Healthcare modeling:** transform simplified, FHIR-shaped `Patient`, `Encounter`, and `Condition` resources into a relational SQL schema.\n- **Pre-load quality gates:** validate required fields, timestamps, uniqueness, patient references, and patient/encounter consistency.\n- **Reliability:** atomic SQLite full refresh, foreign-key constraints, repeatable runs, and a post-load audit.\n- **Testability:** business logic is independent of Airflow, with offline unit tests on Linux and Windows, plus a GitHub Actions job that builds the Docker image and executes the full DAG with Apache Airflow on every push.\n\nThis **does not** claim to be a production FHIR integration or enterprise data warehouse. FHIR-shaped means representative of the structure of selected FHIR R4 resources, **not full FHIR specification conformance**. All records are deterministic and synthetic."
+  },
+  {
+   "doc": "README.md",
+   "section": "Architecture",
+   "text": "```mermaid\nflowchart LR\n    A[\"Synthetic FHIR-shaped JSON Bundle\"] --> B[\"Extract\"]\n    B --> C[\"Transform: Patient / Encounter / Condition\"]\n    C --> D{\"Pre-load data quality checks\"}\n    D -->|PASS| E[\"Atomic SQLite full refresh\"]\n    D -->|FAIL| F[\"Task fails: no load\"]\n    E --> G{\"Post-load count and FK audit\"}\n    G -->|PASS| H[\"Audited relational tables\"]\n    G -->|FAIL| I[\"Task fails: investigate\"]\n```\n\nAirflow DAG (`dags/synthetic_clinical_etl.py`):\n\n`extract \u2192 transform \u2192 quality_gate \u2192 load \u2192 audit`\n\n![Successful Airflow DAG execution](docs/airflow-success.png)\n\n*A manually triggered run in the local Airflow 2.10.5 UI (Docker): all five tasks succeeded.*\n\n**Model:** `patients (1) \u2192 (many) encounters (1) \u2192 (many) conditions`; condition also references the patient to allow a consistency check. Source is `data/synthetic_fhir_bundle.json`; local output is `runtime/clinical_demo.sqlite`, which is ignored by Git."
+  },
+  {
+   "doc": "README.md",
+   "section": "Quickest tryout \u2014 no Airflow installation",
+   "text": "Requirements: Python **3.10+**. The ETL and tests use only Python's standard library.\n\n```bash"
+  },
+  {
+   "doc": "README.md",
+   "section": "Linux/macOS, from repository root",
+   "text": "PYTHONPATH=src python -m clinical_etl.cli\nPYTHONPATH=src python -m clinical_etl.inspect\nPYTHONPATH=src python -m unittest discover -s tests -v\n```\n\nFor **Windows PowerShell**:\n\n```powershell\n$env:PYTHONPATH=\"src\"\npython -m clinical_etl.cli\npython -m clinical_etl.inspect\npython -m unittest discover -s tests -v\n```\n\nExpected ETL output:\n\n```json\n{\n  \"status\": \"PASS\",\n  \"row_counts\": {\"patients\": 4, \"encounters\": 6, \"conditions\": 7},\n  \"checks\": {\"foreign_key_violations\": 0, \"cross_patient_conditions\": 0}\n}\n```\n\nRun it again. Counts remain the same: this is an **idempotent full refresh**.\n\nThe unit tests report `Ran 12 tests ... OK (skipped=3)`: the three skipped tests in `tests/test_airflow_dag.py` need Apache Airflow and run in CI (see below)."
+  },
+  {
+   "doc": "README.md",
+   "section": "Continuous integration",
+   "text": "Every push runs [`.github/workflows/tests.yml`](.github/workflows/tests.yml):\n\n- **Python ETL (Ubuntu and Windows):** compile, unit tests, and a full CLI run.\n- **Airflow DAG run (Docker image):** builds this repository's `Dockerfile`, initializes the Airflow metadata database, and executes `synthetic_clinical_etl` end to end with `dag.test()`, asserting that all five tasks succeed, then prints the audited output tables."
+  },
+  {
+   "doc": "README.md",
+   "section": "Run the actual Airflow DAG (Docker)",
+   "text": "Requirements: Docker Engine/Desktop with Docker Compose and sufficient memory for a local Airflow instance (4 GB or more recommended). This is a **local development demo**, not a multi-service production stack.\n\n```bash\ndocker compose up --build\n```\n\nOpen **http://localhost:8080** and log in as `admin`. To retrieve the password generated by Airflow standalone (if not shown in the logs):\n\n```bash\ndocker compose exec airflow cat /opt/airflow/state/standalone_admin_password.txt\n```\n\nFind `synthetic_clinical_etl` in the DAG list, enable it if necessary, and select **Trigger DAG**. The Graph view shows the five tasks and whether each quality gate passed. The DAG does **not** run on a schedule by default.\n\nAfter it finishes:\n\n```bash\ndocker compose exec airflow python -m clinical_etl.inspect \\\n  --db /opt/airflow/demo/runtime/clinical_demo.sqlite\n```\n\nStop with `docker compose down`. To wipe the local Airflow metadata and synthetic output, use `docker compose down --volumes`.\n\n**Alternative:** Use the [official Airflow 2.10.5 quick start](https://airflow.apache.org/docs/apache-airflow/2.10.5/start.html) with Python 3.11, set `PYTHONPATH` to the absolute `src/` directory, `AIRFLOW__CORE__DAGS_FOLDER` to the absolute `dags/` directory, and `CLINICAL_ETL_PROJECT_ROOT` to this repository's absolute path. Then run `airflow standalone`."
+  },
+  {
+   "doc": "README.md",
+   "section": "Design choices and limitations",
+   "text": "| Choice | Why | Production evolution |\n| --- | --- | --- |\n| Local JSON and SQLite | Easy to evaluate and test, no cloud account | API ingestion and cloud object storage/warehouse |\n| Small payload passed in XCom | Keeps the demo easy to follow | Pass object-storage URIs, not datasets, through XCom |\n| Full refresh in one transaction | Idempotency and easy rollback | Incremental merge with watermarks and audit tables |\n| Manual DAG trigger | Nothing external to poll | Timetable tied to source delivery and SLAs |\n| Validate before and after load | Surface bad data and detect broken relationships | Broader freshness, null-rate, and anomaly checks |\n| Airflow standalone / SQLite executor | Simple local onboarding | Multi-service deployment, managed metadata DB, secrets manager |\n\nThe demo enforces selected relationships and required fields, but does **not** perform comprehensive clinical coding validation, patient identity resolution, authorization, or FHIR R4 validation. It must never be used with real patient information."
+  },
+  {
+   "doc": "README.md",
+   "section": "What to explore next",
+   "text": "1. In `data/synthetic_fhir_bundle.json`, change an `Encounter.subject.reference` to `Patient/pat-DOES-NOT-EXIST` and rerun. The pre-load quality gate fails **before any database replacement**.\n2. Restore the original fixture and rerun. The pipeline passes again.\n3. Explain how you'd replace local file ingestion with secure FHIR API pagination, move payloads to cloud object storage, use incremental loads, and add freshness and SLA monitoring."
+  },
+  {
+   "doc": "README.md",
+   "section": "Repository layout",
+   "text": "```text\n.\n\u251c\u2500\u2500 dags/synthetic_clinical_etl.py    # Airflow orchestration, retries, quality gates\n\u251c\u2500\u2500 src/clinical_etl/                 # Framework-independent ETL and CLI\n\u251c\u2500\u2500 data/synthetic_fhir_bundle.json   # Fictional patient/encounter/condition data\n\u251c\u2500\u2500 tests/test_pipeline.py            # Offline quality and idempotency tests\n\u251c\u2500\u2500 tests/test_airflow_dag.py         # End-to-end DAG run (needs Airflow; runs in CI)\n\u251c\u2500\u2500 docs/INTERVIEW_NOTES.md           # Architecture and trade-off talking points\n\u251c\u2500\u2500 docs/airflow-success.png          # Screenshot of a successful local DAG run\n\u251c\u2500\u2500 .github/workflows/tests.yml       # CI tests on push / pull request\n\u251c\u2500\u2500 Dockerfile                        # Official Apache Airflow base image\n\u2514\u2500\u2500 compose.yaml                      # One-command local Airflow UI\n```"
+  },
+  {
+   "doc": "README.md",
+   "section": "Ethical portfolio note",
+   "text": "This project was developed as a **separate demonstration** of common data engineering concepts. It does not reproduce or disclose internal employer systems, datasets, DAGs, or architectural configurations. If describing it on a r\u00e9sum\u00e9, call it a **portfolio proof of concept**, not production clinical data experience."
+  },
+  {
+   "doc": "README.md",
+   "section": "License",
+   "text": "MIT. Synthetic examples for learning and demonstration, not medical use."
+  }
+ ]
+}
