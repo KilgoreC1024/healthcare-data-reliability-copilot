@@ -29,7 +29,7 @@ drc = "drc.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-drc = ["py.typed", "platforms.yml"]
+drc = ["py.typed", "platforms.yml", "templates/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,4 +1,4 @@
-"""Command line: `drc incidents | investigate | eval | approve | audit-log | collect | lab`."""
+"""Command line: `drc incidents | investigate | eval | approve | audit-log | collect | lab | site`."""
 
 from __future__ import annotations
 
@@ -154,6 +154,14 @@ def cmd_lab(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_site(args: argparse.Namespace) -> int:
+    from drc import site
+
+    out = site.build(Path(args.out))
+    print(f"wrote {out.as_posix()} ({out.stat().st_size // 1024} KB)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="drc", description="Healthcare Data Reliability Copilot")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -216,6 +224,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--only", action="append", help="scenario key or incident id (repeatable)")
     p.add_argument("--out", help="benchmark directory (default ./benchmark)")
     p.set_defaults(func=cmd_lab)
+
+    p = sub.add_parser("site", help="build the static demo site that replays recorded investigations")
+    p.add_argument("--out", default="site", help="output directory (default ./site)")
+    p.set_defaults(func=cmd_site)
 
     args = parser.parse_args(argv)
     return args.func(args)

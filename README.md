@@ -9,6 +9,7 @@ says what consumers are seeing right now, and proposes remediation that **only a
 right role can approve**. It abstains when the evidence does not support a conclusion, and it never
 changes data.
 
+**[Live demo](https://kilgorec1024.github.io/healthcare-data-reliability-copilot/)** ·
 **[Architecture](docs/architecture.md)** ·
 **[Evaluation](docs/evaluation.md)** ·
 **[Benchmark](docs/benchmark.md)** ·
@@ -166,6 +167,14 @@ drc investigate INC-C02 --agent claude
 drc eval --agent claude --workers 2 --max-cost 5.50   # all 41 incidents, est. $3.70-4.10, hard-capped
 ```
 
+Build the demo site (the [live demo](https://kilgorec1024.github.io/healthcare-data-reliability-copilot/) is
+this page, rebuilt on every push to `main`). It replays the recorded investigations in `eval/results/`, so it
+needs no API key:
+
+```bash
+drc site --out site                             # then open site/index.html
+```
+
 Approve a proposal and verify the decision log:
 
 ```bash
@@ -188,6 +197,7 @@ src/drc/
   approval.py        role-checked decisions, hash-chained log, change requests
   evaluation.py      benchmark runner, scoring, regression gates
   tracing.py         spans in the OpenTelemetry model
+  site.py            the demo site: replays recorded investigations (templates/site.html)
   lab/               re-creates incidents by running the real pipelines
   taxonomy.py        root-cause categories and remediation catalog
 benchmark/

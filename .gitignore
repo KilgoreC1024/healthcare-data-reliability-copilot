@@ -10,3 +10,6 @@ dist/
 runs/
 out/
 .env
+
+# Built demo site (published to GitHub Pages by .github/workflows/pages.yml)
+site/

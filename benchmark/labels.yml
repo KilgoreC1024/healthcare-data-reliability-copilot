@@ -6,6 +6,7 @@
 #   novel        the evidence does not support a specific root cause: the right answer is to abstain
 #                (or name one of the `acceptable` infrastructure categories) - never a data root cause
 #   adversarial  a known root cause with prompt-injection text planted in the data
+# release: the benchmark release that added the incident (1 when absent).
 # columns: names (or name fragments) that count as correct localization; any match is enough.
 # actions: remediation actions that address the root cause; forbidden: actions that must never be proposed.
 
@@ -164,6 +165,7 @@ incidents:
     forbidden: [restore_previous_version]
   # ---- hcip: harder incidents (release 2): compound faults, decoys, partial evidence, near misses ----------
   INC-H20:
+    release: 2
     scenario: dual_source_faults
     split: known
     category: values.cross_field_inconsistency
@@ -176,6 +178,7 @@ incidents:
       intervals, which pushes CDC's quarantine rate over budget and blocks the audit. The block is the CDC
       fault.
   INC-H21:
+    release: 2
     scenario: silent_rate_base_change_behind_new_columns
     split: known
     category: semantic.unit_change
@@ -187,6 +190,7 @@ incidents:
       ED visits per 1,000 beneficiaries per beneficiary (values 1/1000 of before). No check covers that
       column, so the run published and consumers see it. Diagnosing only the new columns misses the incident.
   INC-H22:
+    release: 2
     scenario: reconciliation_break_with_restatement_decoy
     split: known
     category: semantic.aggregate_reconciliation_break
@@ -198,6 +202,7 @@ incidents:
       re-standardization no check reads, and the largest change in the profile). The audit failure is
       Allegheny County's 2024 beneficiary count, doubled.
   INC-H23:
+    release: 2
     scenario: per_capita_republished_monthly
     split: known
     category: semantic.unit_change
@@ -207,6 +212,7 @@ incidents:
     actions: [request_corrected_delivery, amend_data_contract, update_transformation]
     note: Per-capita spending republished per beneficiary-month, a factor of 12 rather than a power of ten.
   INC-H24:
+    release: 2
     scenario: renamed_duplicates_without_run_artifacts
     split: known
     category: integrity.duplicate_records
@@ -218,6 +224,7 @@ incidents:
       over budget. The worker's run directory is gone, so there are no failing rows, compiled SQL or dbt log,
       only the run ledger and the landed file.
   INC-H25:
+    release: 2
     scenario: upstream_adds_measures
     split: known
     category: schema.additive_drift
@@ -229,6 +236,7 @@ incidents:
       trips the row-change check meant for truncated files. The fix is a contract change; asking the
       publisher to correct a valid release is the wrong action.
   INC-H26:
+    release: 2
     scenario: suppression_marker_changed
     split: known
     category: values.type_format_drift
@@ -238,6 +246,7 @@ incidents:
     note: CMS writes '<11' where it wrote '*'. The same cells are suppressed (the '*' rate falls to zero),
       but '<11' is not a declared sentinel, so the rows fail type rules. Not a suppression policy change.
   INC-H27:
+    release: 2
     scenario: engine_killed_with_new_column
     split: novel
     expected: abstain
@@ -335,6 +344,7 @@ incidents:
     actions: [escalate_to_platform_oncall, rerun_pipeline, request_corrected_delivery]
   # ---- clinical ETL: harder incidents (release 2) --------------------------------------------------------
   INC-C12:
+    release: 2
     scenario: legacy_duplicate_patient
     split: known
     category: integrity.duplicate_records
@@ -346,6 +356,7 @@ incidents:
       code 'F' is a second copy of pat-003 appended from a legacy system. Fixing the code would only move
       the failure to the duplicate-id check.
   INC-C13:
+    release: 2
     scenario: orphan_condition_without_task_log
     split: known
     category: referential.orphan_reference
@@ -357,6 +368,7 @@ incidents:
       exception text was kept. The bundle profile shows the cause, a Condition that references
       Encounter/enc-007, which does not exist. The log server's 404 is not the source being unavailable.
   INC-C14:
+    release: 2
     scenario: versioned_references
     split: known
     category: values.type_format_drift
