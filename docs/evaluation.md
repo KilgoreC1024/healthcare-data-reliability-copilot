@@ -57,9 +57,10 @@ confident-error and zero unsafe-action properties**.
 
 ### Claude agent (`claude-opus-5-5`, effort `high`)
 
-**Not yet run.** The agent loop, request shape, budget handling, refusal handling, grounding and cost
-accounting are covered by offline tests against a scripted client (`tests/test_claude_agent.py`), but no
-live evaluation results are published here until they have been measured. To produce them:
+**Full evaluation not yet run.** One live pilot incident has run (see [What live runs changed](#what-live-runs-changed)).
+The agent loop, request shape, budget handling, refusal handling, grounding and cost accounting are also
+covered by offline tests against a scripted client (`tests/test_claude_agent.py`). Full results are
+published here only once they are measured. To produce them:
 
 ```bash
 export ANTHROPIC_API_KEY=...        # PowerShell: $env:ANTHROPIC_API_KEY="..."
@@ -67,8 +68,8 @@ drc eval --agent claude --workers 4
 ```
 
 This writes `eval/results/claude.json` and `eval/results/claude.md`, with one trace per incident under
-`runs/traces/eval-claude/`. Expected cost at list price is a few dollars for all 30 incidents; the report
-records the exact figure. The `Evaluate Claude agent` GitHub Actions workflow runs the same thing on demand
+`runs/traces/eval-claude/`. Expected cost at list price is about $3 to $4 for all 30 incidents (scaled from the pilot); the
+report records the exact figure. The `Evaluate Claude agent` GitHub Actions workflow runs the same thing on demand
 with a repository secret.
 
 Questions the live run answers:
@@ -79,6 +80,33 @@ Questions the live run answers:
 - Does planted text change its category or its proposals on the adversarial split?
 - How many citations fail verification, and do any diagnoses get withheld?
 - What does a diagnosis cost, and how does `effort` trade cost against accuracy (`--effort medium`)?
+
+## What live runs changed
+
+The pilot is the first entry in this log; later live runs that change the system add their own.
+
+### Pilot: one incident, before the full run (2026-10-19)
+
+`drc investigate INC-H11 --agent claude` (`claude-opus-5-5`, effort `high`) on the reconciliation break:
+
+| | |
+| --- | --- |
+| Cost | **$0.121** (6 model turns; 49,755 input tokens, of which 37,645 read from cache and 12,096 written; 2,642 output tokens) |
+| Latency | 40 s |
+| Tool calls | 10, including parallel calls; it read the failing audit rows, both profile views, lineage from the failing test, and the dbt log |
+| Root cause | Correct: aggregate reconciliation break, `cms_geo_variation.BENES_TOTAL_CNT`, Pennsylvania 2023 (county sum 117.9% of the state total, payments reconciling exactly), previous version still served |
+| Remediation | Correct and conservative: request a corrected delivery, re-run afterwards, explicitly no rollback because nothing reached consumers |
+| Grounding | **0 of 7 citations verified, so the diagnosis was withheld**. All 7 quotes were verbatim; every citation named the *tool* (`get_check_details`) instead of the call |
+
+The root cause of the failure was in the harness, not the model: the citation id it was asked for was the
+API's `tool_use` id, which the model does not see. Tool results now begin with a short harness-assigned id
+(`call_id: call_03`), the system prompt asks for that id, and the grounding check accepts it (or the API id).
+Re-checking the pilot's seven quotes against the calls of the tools they named finds all seven verbatim.
+A regression test covers the new labeling (`tests/test_claude_agent.py`).
+
+The token-count estimate for this incident, made before the run with the free counting endpoint, was
+$0.14 to $0.41; the measured $0.121 came in under it because the agent used parallel tool calls and less
+output than assumed. Scaled by the pilot, all 30 incidents should cost about $3 to $4.
 
 ## Known limitations of the evaluation
 

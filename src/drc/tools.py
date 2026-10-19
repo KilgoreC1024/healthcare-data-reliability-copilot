@@ -139,9 +139,9 @@ class ToolRegistry:
         return self.bundle.evidence
 
     # ---- dispatch -----------------------------------------------------------------------------------
-    def call(self, name: str, arguments: dict[str, Any] | None, call_id: str | None = None) -> ToolCall:
+    def call(self, name: str, arguments: dict[str, Any] | None, api_id: str | None = None) -> ToolCall:
         self._counter += 1
-        call_id = call_id or f"call_{self._counter:02d}"
+        call_id = f"call_{self._counter:02d}"
         arguments = arguments or {}
         tracer = self.tracer or Tracer()
         with tracer.span(
@@ -149,10 +149,11 @@ class ToolRegistry:
             **{
                 "gen_ai.operation.name": "execute_tool",
                 "gen_ai.tool.name": name,
-                "gen_ai.tool.call.id": call_id,
+                "gen_ai.tool.call.id": api_id or call_id,
             },
         ) as span:
             record = self._execute(name, arguments, call_id)
+            record.api_id = api_id
             span.set(**{"drc.tool.is_error": record.is_error, "drc.tool.output_chars": len(record.output)})
         return record
 

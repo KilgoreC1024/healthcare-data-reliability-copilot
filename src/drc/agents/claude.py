@@ -143,12 +143,12 @@ class ClaudeInvestigator:
                 if response.stop_reason == "tool_use" and tool_uses:
                     results = []
                     for block in tool_uses:
-                        record = registry.call(block.name, dict(block.input), call_id=block.id)
+                        record = registry.call(block.name, dict(block.input), api_id=block.id)
                         results.append(
                             {
                                 "type": "tool_result",
                                 "tool_use_id": block.id,
-                                "content": record.output,
+                                "content": f"call_id: {record.call_id}\n{record.output}",
                                 "is_error": record.is_error,
                             }
                         )

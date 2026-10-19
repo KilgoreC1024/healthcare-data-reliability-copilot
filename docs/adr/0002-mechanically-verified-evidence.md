@@ -30,8 +30,12 @@ The same rule applies to the deterministic baseline, so both investigators are h
 - Verification is cheap, deterministic, and explainable: "this quote is not in that output."
 - Requiring verbatim quotes changes model behavior as well as catching errors: the instruction to quote
   exactly pushes the investigator to read the record rather than recall typical failure patterns.
-- Tool-call ids come from the API's `tool_use` blocks, so a citation cannot point at a call that did not
-  happen.
+- Call ids are assigned by the harness (`call_01`, `call_02`, ...) and printed on the first line of each
+  tool result, so a citation cannot point at a call that did not happen. The first live run showed why the
+  id has to be visible: the model cited tools by name, because the API's own `tool_use` ids are not
+  something it can reliably read back. All seven of its quotes were verbatim, yet the grounding check
+  correctly withheld the diagnosis. Results now carry the short id; the API id is kept for tracing and is
+  also accepted.
 
 ## Consequences
 

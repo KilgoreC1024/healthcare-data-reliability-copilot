@@ -102,7 +102,8 @@ class Diagnosis(BaseModel):
 
 
 class ToolCall(BaseModel):
-    call_id: str
+    call_id: str  # short id shown to the investigator in the tool result (call_01, ...)
+    api_id: str | None = None  # the API's tool_use id, kept for tracing
     name: str
     arguments: dict[str, Any]
     output: str

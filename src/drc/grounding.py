@@ -36,6 +36,7 @@ def quote_in_output(quote: str, output: str) -> bool:
 
 def verify(diagnosis: Diagnosis, calls: list[ToolCall]) -> tuple[Diagnosis, list[str]]:
     by_id = {c.call_id: c for c in calls if not c.is_error}
+    by_id.update({c.api_id: c for c in calls if c.api_id and not c.is_error})
     events: list[str] = []
     checked = []
     for citation in diagnosis.evidence:

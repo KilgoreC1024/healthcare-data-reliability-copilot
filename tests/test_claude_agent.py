@@ -58,12 +58,12 @@ def final_answer(**overrides) -> str:
         "evidence": [
             {
                 "claim": "the contract reports the column missing",
-                "tool_call_id": "toolu_2",
+                "tool_call_id": "call_02",
                 "quote": "missing: TOT_MDCR_STDZD_PYMT_PC",
             },
             {
                 "claim": "nothing new was served",
-                "tool_call_id": "toolu_3",
+                "tool_call_id": "call_03",
                 "quote": '"this_run_is_served": false',
             },
         ],
@@ -97,7 +97,8 @@ def test_investigation_loop_request_shape_and_evidence(load):
     assert d.status == "diagnosed" and d.category == "schema.required_column_missing"
     assert [c.verified for c in d.evidence] == [True, True]
     assert d.remediation[0].policy_status == "allowed"
-    assert [t.call_id for t in inv.tool_calls] == ["toolu_1", "toolu_2", "toolu_3"]
+    assert [t.call_id for t in inv.tool_calls] == ["call_01", "call_02", "call_03"]
+    assert [t.api_id for t in inv.tool_calls] == ["toolu_1", "toolu_2", "toolu_3"]
 
     first = client.requests[0]
     assert first["model"] == "claude-opus-5-5"
@@ -115,6 +116,8 @@ def test_investigation_loop_request_shape_and_evidence(load):
     second = client.requests[1]["messages"]
     assert [m["role"] for m in second] == ["user", "assistant", "user"]
     assert [r["tool_use_id"] for r in second[2]["content"]] == ["toolu_1", "toolu_2"]
+    # The model cannot see API tool_use ids, so each result is labeled with the id it must cite.
+    assert second[2]["content"][1]["content"].startswith("call_id: call_02\n")
 
     assert inv.usage.turns == 3
     assert abs(inv.usage.cost_usd - 3 * (1000 * 4 + 200 * 20) / 1e6) < 1e-9
@@ -146,13 +149,13 @@ def test_budget_exhaustion_forces_a_final_answer_without_tools(load):
     assert last["tool_choice"] == {"type": "none"}
     assert last["messages"][-1]["content"][-1] == {"type": "text", "text": FINAL_TURN_NOTE}
     assert "tool budget exhausted" in inv.guardrail_events
-    # toolu_3 was refused by the budget, so the citation that relies on it does not verify.
+    # call_03 was refused by the budget, so the citation that relies on it does not verify.
     assert [c.verified for c in inv.diagnosis.evidence] == [True, False]
 
 
 def test_fabricated_evidence_gets_the_diagnosis_withheld(load):
     fabricated = [
-        {"claim": "the disk filled up", "tool_call_id": "toolu_1", "quote": "No space left on device"}
+        {"claim": "the disk filled up", "tool_call_id": "call_01", "quote": "No space left on device"}
     ]
     client = FakeClient(
         response(tool_use("toolu_1", "get_run_overview")),
@@ -172,7 +175,11 @@ def test_refusal_becomes_an_abstention(load):
 
 def test_fallback_model_usage_is_recorded(load):
     client = FakeClient(
-        response(tool_use("toolu_2", "list_failed_checks", include_warnings=False), model="claude-opus-4-8"),
+        response(
+            tool_use("toolu_1", "get_run_overview"),
+            tool_use("toolu_2", "list_failed_checks", include_warnings=False),
+            model="claude-opus-4-8",
+        ),
         response(
             tool_use("toolu_3", "get_downstream_impact", node="cms_geo_variation"), model="claude-opus-4-8"
         ),
@@ -180,7 +187,20 @@ def test_fallback_model_usage_is_recorded(load):
     )
     inv = ClaudeInvestigator(client=client).investigate(*load("INC-H01"))
     assert any("fallback model claude-opus-4-8" in e for e in inv.guardrail_events)
+    assert inv.diagnosis.status == "diagnosed"
     assert abs(inv.usage.cost_usd - 3 * (1000 * 5 + 200 * 25) / 1e6) < 1e-9
+
+
+def test_citing_the_api_tool_use_id_also_verifies(load):
+    by_api_id = [
+        {"claim": "missing column", "tool_call_id": "toolu_2", "quote": "missing: TOT_MDCR_STDZD_PYMT_PC"}
+    ]
+    client = FakeClient(
+        response(tool_use("toolu_2", "list_failed_checks", include_warnings=False)),
+        response(text(final_answer(evidence=by_api_id)), stop="end_turn"),
+    )
+    inv = ClaudeInvestigator(client=client).investigate(*load("INC-H01"))
+    assert [c.verified for c in inv.diagnosis.evidence] == [True]
 
 
 def test_without_fallbacks_the_standard_endpoint_is_used(load):
