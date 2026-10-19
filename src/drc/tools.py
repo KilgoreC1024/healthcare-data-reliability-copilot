@@ -292,17 +292,12 @@ class ToolRegistry:
                 "current": current.get("_resource_types"),
                 "previous": previous.get("_resource_types"),
             }
-        names = [c for c in current if not c.startswith("_")] + [
-            c for c in previous if not c.startswith("_") and c not in current
-        ]
         if not columns:
-            ranked = sorted(names, key=lambda c: -_change_score(current.get(c), previous.get(c)))
             head["columns_with_notable_changes"] = [
                 {"column": c, "current": current.get(c), "previous": previous.get(c)}
-                for c in ranked[:6]
-                if _change_score(current.get(c), previous.get(c)) > 1e-9
+                for c in changed_columns(info)[:6]
             ]
-            head["profiled_columns"] = len(names)
+            head["profiled_columns"] = len(_profiled_names(current, previous))
             return head
         head["columns"] = {
             c: {"current": current.get(c, "not profiled"), "previous": previous.get(c, "not profiled")}
@@ -383,6 +378,20 @@ class ToolRegistry:
         if name not in logs:
             raise ToolError(f"no log named '{name}'. Available: {sorted(logs)}")
         return {"name": name, "text": "\n".join(logs[name].splitlines()[-60:])}
+
+
+def _profiled_names(current: dict[str, Any], previous: dict[str, Any]) -> list[str]:
+    return [c for c in current if not c.startswith("_")] + [
+        c for c in previous if not c.startswith("_") and c not in current
+    ]
+
+
+def changed_columns(info: dict[str, Any]) -> list[str]:
+    """A source's profiled columns ordered by how much their profile moved, most first, leaving out unchanged
+    ones. `profile_columns` shows the first six; the coverage guardrail uses the same order."""
+    current, previous = info.get("current") or {}, info.get("previous") or {}
+    scores = {c: _change_score(current.get(c), previous.get(c)) for c in _profiled_names(current, previous)}
+    return [c for c in sorted(scores, key=lambda c: -scores[c]) if scores[c] > 1e-9]
 
 
 def _change_score(cur: Any, prev: Any) -> float:

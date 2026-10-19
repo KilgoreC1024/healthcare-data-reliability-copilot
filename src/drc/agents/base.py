@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from drc import grounding, policy
+from drc import coverage, grounding, policy
 from drc.models import Catalog, Diagnosis, IncidentBundle, Investigation, Usage
 from drc.tools import ToolRegistry
 from drc.tracing import Tracer
@@ -28,7 +28,8 @@ def finalize(
     tracer: Tracer,
     events: list[str] | None = None,
 ) -> Investigation:
-    """Apply the grounding check and the remediation policy, whatever produced the diagnosis."""
+    """Apply the grounding check, the remediation policy and the coverage check, whatever produced the
+    diagnosis."""
     with tracer.span("guardrails.grounding") as span:
         diagnosis, grounding_events = grounding.verify(diagnosis, registry.calls)
         span.set(
@@ -37,6 +38,9 @@ def finalize(
     with tracer.span("guardrails.policy") as span:
         diagnosis, policy_events = policy.evaluate(diagnosis, bundle)
         span.set(proposals=len(diagnosis.remediation))
+    with tracer.span("guardrails.coverage") as span:
+        diagnosis, coverage_events = coverage.check(diagnosis, registry.calls, bundle)
+        span.set(needs_review=diagnosis.needs_review)
     return Investigation(
         incident=bundle.incident,
         investigator=investigator,
@@ -45,5 +49,11 @@ def finalize(
         usage=usage,
         latency_s=round(latency_s, 3),
         trace_id=tracer.trace_id,
-        guardrail_events=[*(events or []), *registry.guardrail_events, *grounding_events, *policy_events],
+        guardrail_events=[
+            *(events or []),
+            *registry.guardrail_events,
+            *grounding_events,
+            *policy_events,
+            *coverage_events,
+        ],
     )

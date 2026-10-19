@@ -18,6 +18,8 @@ def render(inv: Investigation, show_tools: bool = True) -> str:
     ]
     if d.status == "diagnosed":
         lines.append(f"DIAGNOSIS  {title} [{d.category}]  confidence {d.confidence:.2f}")
+        if d.needs_review:
+            lines.append(f"  NEEDS REVIEW (coverage check): {d.review_reason}")
     else:
         lines.append("ABSTAINED  no root cause asserted")
         lines.append(f"  reason: {d.abstain_reason}")

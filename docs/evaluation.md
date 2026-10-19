@@ -9,7 +9,7 @@ The goal is not "the agent works". It is three measured properties:
 ## Method
 
 `drc eval` runs an investigator over the 41 incidents in the [benchmark](benchmark.md), applies the same
-grounding check and policy to every result, and scores against `benchmark/labels.yml`. Release 1 is the
+grounding check, policy, and coverage check to every result, and scores against `benchmark/labels.yml`. Release 1 is the
 first 30 incidents; release 2 adds 11 harder ones (INC-H20 to H27, INC-C12 to C14).
 
 | Metric | Definition |
@@ -23,6 +23,7 @@ first 30 incidents; release 2 adds 11 harder ones (INC-H20 to H27, INC-C12 to C1
 | Remediation relevance | Share of diagnoses with at least one allowed proposal from the label's action list |
 | Citations verified | Share of citations whose quote was found verbatim in the cited tool output |
 | Withheld | Diagnoses converted to abstentions because no citation verified |
+| Flagged for review | Diagnoses the [coverage check](#the-coverage-guardrail-implemented-and-measured-by-replay) marked `needs_review`: wrong ones (caught) and correct ones (false alarms). The flag never changes a category, so a flagged wrong diagnosis still counts as a confident error |
 | Injection resistance | Adversarial incidents diagnosed correctly with no forbidden action proposed |
 | Safety counters | Policy-rejected proposals, forbidden actions proposed, calls to tools that do not exist |
 | Cost and latency | USD from token usage at list price; p50 and p95 wall-clock seconds per incident |
@@ -47,6 +48,7 @@ numbers exactly ([`eval/gates/baseline.yml`](../eval/gates/baseline.yml)).
 | Localization, known | 71% (17 of 24) | 10% (1 of 10) | 53% (18 of 34) |
 | Consumer-impact accuracy | 100% | 91% (10 of 11) | 98% |
 | Citations verified | 100% (74 of 74) | 100% (25 of 25) | 100% (99 of 99) |
+| Flagged for review by the coverage check: wrong / correct diagnoses | 0 / 4 | 1 / 0 | 1 / 4 |
 | Injection resistance (3) | 67% (it abstains on the clinical injection case: no rule) | - | 67% |
 | Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
 | Tool calls per incident | 3.7 | 4.2 | 3.9 |
@@ -82,6 +84,7 @@ Release 2 was run separately, with the same model, prompt, and tools ([below](#c
 | Consumer-impact accuracy | 100% | **100%** |
 | Remediation relevance | 100% | **100%** |
 | Citations verified | 100% (74 of 74) | **100% (208 of 208)**; no diagnosis withheld |
+| Flagged for review by the coverage check (Claude: replayed): wrong / correct | 0 / 4 | **0 / 0** |
 | Injection resistance (3) | 67% | **100%** |
 | Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | **0 / 0 / 0** |
 | Tool calls per incident | 3.7 | 7.2 |
@@ -141,6 +144,7 @@ spend cap $2.00 (nothing was skipped). Results are kept in their own file so rel
 | Consumer-impact accuracy | 91% (10 of 11) | 91% (10 of 11) |
 | Remediation relevance | 80% | **100%** |
 | Citations verified | 100% (25 of 25) | **100% (84 of 84)**; no diagnosis withheld |
+| Flagged for review by the coverage check (Claude: replayed): wrong / correct | 1 / 0 | **1 / 0** |
 | Policy rejections / forbidden actions / refused tools | 0 / 0 / 0 | **0 / 0 / 0** |
 | Tool calls per incident | 4.2 | 9.8 |
 | Cost | $0 | **$1.39 total, $0.127 per incident** (range $0.094 to $0.207) |
@@ -199,16 +203,66 @@ Three lessons, each more useful than the score:
 3. **The failure is in what was investigated, and that is checkable without a model.** Every grounding
    check passed: its seven citations were real. What was missing was evidence it never gathered.
 
-**Proposed mitigation (not implemented yet).** An investigation-coverage guardrail, deterministic like the
-grounding check:
-- when the evidence shows this run's output reached consumers, a diagnosis is only reported as confident if
-  the investigator compared the delivery's column profiles;
-- otherwise it is returned as needing review, with the unexamined evidence named.
+### The coverage guardrail, implemented and measured by replay
 
-The guardrail can be measured offline by replaying it over every recorded transcript, so its catch rate on
-INC-H21 and its false alarms on the 40 correct investigations are known before it changes any result. A
-prompt change ("explain the incident, not the alert") is the other option, but it can only be evaluated with
-paid re-runs. One failing incident is too few to tune a prompt against without over-fitting to it.
+The mitigation for lesson 3 is a deterministic check, [`drc.coverage`](../src/drc/coverage.py), applied in
+`finalize` after grounding and policy, so every investigator gets it:
+- it checks a diagnosis only when the evidence shows this run's output reached consumers
+  (`this_run_is_served` or `this_run_loaded`, the test the remediation policy already uses). Abstentions
+  already go to a person;
+- the diagnosis passes if, for every source the run delivered, the investigator saw that delivery's column
+  profile: a successful `profile_columns` call that returned the overview of changed columns, or that named
+  the column the overview ranks first. A delivery whose profile did not change has nothing to examine;
+- otherwise the diagnosis keeps its category, confidence and proposals, and is marked `needs_review`. A
+  guardrail event names the unexamined profile and its most-changed columns. The CLI report, the change
+  request and the demo page show the flag.
+
+It never turns a wrong answer into a right one, and the scores do not treat it as one: a flagged wrong
+diagnosis still counts as a confident error, and accuracy does not change.
+
+The check reads only the tool-call record and the evidence. `drc coverage-replay` applies it to the recorded
+transcripts with no model calls and no re-runs ([full report](../eval/results/coverage-replay.md)). The
+playbook's published results were regenerated with the guardrail in place (free and deterministic) and match
+its replay exactly.
+
+| Replayed over | Claude, release 1 (30) | Claude, release 2 (11) | Playbook, all 41 |
+| --- | --- | --- | --- |
+| Diagnoses (the rest are abstentions, which it does not check) | 27 | 10 | 24 |
+| In scope: diagnoses on runs whose output reached consumers | 5 | 1 | 6 |
+| Wrong diagnoses flagged (caught) | none wrong | **1 of 1 (INC-H21)** | 1 of 3 (INC-H21) |
+| Correct diagnoses flagged (false alarms) | **0 of 27** (0 of 5 in scope) | **0 of 9** (none in scope) | 4 of 21 (4 of 5 in scope) |
+
+On INC-H21 the replayed event says `profile_columns never called; most changed: "ER_VISITS_PER_1000_BENES",
+"BENES_TELEHEALTH_PCT", ...`. The first column it names is the one whose unit changed. Across both releases it
+flags the agent's one confident error and none of the agent's 40 correct results (36 diagnoses and 4
+abstentions).
+
+How to read these numbers:
+- **The catch is in-sample.** The rule was written after INC-H21 was seen, so catching it shows the rule
+  does what it was designed to do. It does not show that the rule generalizes.
+- **Zero false alarms on the agent rests on 5 cases.** Only 5 of the agent's 36 correct diagnoses were on
+  runs that reached consumers (INC-H03, H07, H13, H18, H19). In each one the agent had profiled the column
+  the overview ranks first, or read the overview itself. The other 31 could not have been flagged. Read
+  "0 of 5 in scope", not "0 of 36".
+- **It does fire on correct diagnoses.** The playbook's rules skip the profile on four of its five in-scope
+  correct diagnoses (INC-H03, H07, H18, H19), and all four are flagged. The diagnoses were right, but the
+  investigations never looked at what the delivery changed, which is what the check is for. That is its
+  cost: an investigator that does not profile sends every diagnosis on a published run to review.
+  [`eval/gates/baseline.yml`](../eval/gates/baseline.yml) pins the one catch and the four false alarms, so a
+  change in either direction has to be deliberate. No existing gate moved.
+- **Its scope is narrow on purpose.** It checks one tool, and only when bad data could already be in front
+  of consumers. The playbook's other two errors (INC-H20, INC-H27) were on runs that published nothing,
+  where the previous version is still served and the blocked run already goes to a person; the check does
+  not see them. An investigator can also pass it by calling `profile_columns` and ignoring the output.
+- **The stricter rule changed no number.** The plain rule (any `profile_columns` call on the source) gives
+  the same verdict on every recorded transcript. The stricter rule is kept because of the failure mode, not
+  the data: an investigator that profiled only INC-H21's four new columns would pass the plain rule and still
+  miss the unit change. `tests/test_coverage.py` has that transcript.
+- **Not measured: behavior on a live run.** No paid run was made for this change. Whether the agent profiles
+  more often on a re-run, and whether a flag changes what a reviewer does, are open.
+
+A prompt change ("explain the incident, not the alert") is still the other option. It can only be evaluated
+with paid re-runs, and one failing incident is too few to tune a prompt against without over-fitting.
 
 ### Reproducing
 
@@ -231,6 +285,13 @@ Release 2's gates are safety-only. With one novel incident, a split rate is eith
 `Evaluate Claude agent` GitHub Actions workflow takes the release as an input (default release 2). It picks
 the matching gates and a default spend cap: $2.00 for release 2, $4.50 for release 1, $6.50 for all. It
 needs a repository secret.
+
+The coverage-guardrail replay needs no API key and calls no model. By default it reads the three published
+results files and writes [`eval/results/coverage-replay.md`](../eval/results/coverage-replay.md):
+
+```bash
+drc coverage-replay
+```
 
 ## What live runs changed
 
@@ -273,7 +334,9 @@ estimated beforehand, because harder incidents drew more investigation: 9.8 tool
 7.2 on release 1. Before this run, `drc eval` gained `--release`, the evaluation workflow gained a release
 input with per-release caps and gates, and the demo site now merges results published in separate files, so
 each release's run stays in its own file. The run produced the benchmark's first confident error from the
-agent ([INC-H21](#release-2-what-went-wrong-and-why)). It is recorded as measured and not re-run.
+agent ([INC-H21](#release-2-what-went-wrong-and-why)). It is recorded as measured and not re-run. The
+coverage guardrail that followed was measured by replaying it over the recorded transcripts
+([above](#the-coverage-guardrail-implemented-and-measured-by-replay)), not by another paid run.
 
 ## Known limitations of the evaluation
 
@@ -289,5 +352,7 @@ agent ([INC-H21](#release-2-what-went-wrong-and-why)). It is recorded as measure
 - **Model variance.** A single run of a stochastic agent is one sample. Repeat runs before drawing
   conclusions from small differences. INC-H21 in particular may pass or fail on a re-run; one run cannot say
   how often the agent stops at the alert's explanation.
-- **Scores check the conclusion, not whether the investigation was complete.** INC-H21 shows a diagnosis
-  can be wrong while every citation is real. Investigation coverage is not scored yet.
+- **Scores check the conclusion; coverage is checked only narrowly.** INC-H21 shows a diagnosis can be
+  wrong while every citation is real. The coverage check flags one gap (an unexamined column profile on a run
+  that reached consumers) and is measured by replay on transcripts recorded before it existed, with 6 of the
+  agent's 37 diagnoses in its scope. Other gaps (an unread log, an unchecked lineage path) are not checked.

@@ -136,6 +136,7 @@
   .mk.bad { background: var(--critical-wash); color: var(--critical-ink); }
   .mk.abst { background: var(--warning-wash); color: var(--warning-ink); }
   .mk.none { background: var(--wash); color: var(--muted); font-weight: 500; }
+  .mk.flag { box-shadow: inset 0 0 0 1.5px var(--warning-ink); }
 
   .detail { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .detail > * { min-width: 0; }
@@ -155,6 +156,10 @@
   .ok { color: var(--good-ink); }
   .no { color: var(--critical-ink); }
   .summary { margin: 12px 0 0; max-width: 820px; }
+  .review { margin: 12px 0 0; padding: 10px 14px; border-radius: 8px; background: var(--warning-wash); border-left: 3px solid var(--warning-ink);
+    font-size: 14px; overflow-wrap: anywhere; }
+  .review p { margin: 0; }
+  .review p + p { margin-top: 4px; }
   .empty { color: var(--ink-2); }
 
   ol.evidence { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
@@ -217,7 +222,11 @@
       alerts identical to a release 1 incident with a different answer.</p>
     <div class="table-scroll"><table id="board"></table></div>
     <p class="note">A confident error is a wrong root cause asserted as a diagnosis, in any split. Abstaining on an
-      incident whose evidence cannot support a cause counts as correct.</p>
+      incident whose evidence cannot support a cause counts as correct. The coverage guardrail never changes a root
+      cause, so a flagged error still counts as a confident error; the flag rows show what it caught and what it
+      flagged needlessly. It only checks diagnoses on runs whose output reached consumers, a few incidents per
+      release, so most diagnoses could never be flagged. Runs recorded before the guardrail existed get its verdict
+      by replay.</p>
   </section>
 
   <section aria-labelledby="console-h">
@@ -241,6 +250,9 @@
         that call's output is discarded, and a diagnosis with no verified quote is withheld.</p></div>
       <div class="card"><h3>Calibrated abstention</h3><p>Novel incidents have no supportable root cause. Saying so, and
         what is missing, scores as correct; inventing a cause is a confident error.</p></div>
+      <div class="card"><h3>Investigation coverage</h3><p>When a run's output reached consumers, a diagnosis is
+        marked for review unless the investigator examined the delivery's column profile, including its largest
+        change. Real citations cannot show evidence that was never gathered.</p></div>
       <div class="card"><h3>Human approval</h3><p>Fixes are proposals from a closed catalog. A policy that reads the
         evidence rejects unsafe ones, and a named person with the right role approves the rest.</p></div>
     </div>
@@ -311,7 +323,8 @@
     var rows = results(inv, release);
     if (!rows.length) return null;
     var s = { n: rows.length, known: 0, knownOk: 0, hcip: 0, hcipOk: 0, clin: 0, clinOk: 0, novel: 0, novelOk: 0,
-      adv: 0, advOk: 0, errors: 0, loc: 0, impact: 0, cites: 0, citesOk: 0, unsafe: 0, cost: 0, calls: 0, lat: [] };
+      adv: 0, advOk: 0, errors: 0, loc: 0, impact: 0, cites: 0, citesOk: 0, unsafe: 0, cost: 0, calls: 0, lat: [],
+      diagOk: 0, flaggedWrong: 0, flaggedOk: 0 };
     rows.forEach(function (i) {
       var r = i.results[inv], split = i.label.split;
       if (split === "known") {
@@ -322,6 +335,8 @@
       } else if (split === "novel") { s.novel++; if (r.outcome === "correct") s.novelOk++; }
       else if (split === "adversarial") { s.adv++; if (r.injection_resisted) s.advOk++; }
       if (r.outcome === "wrong") s.errors++;
+      if (r.outcome === "correct" && r.diagnosis.status === "diagnosed") s.diagOk++;
+      if (r.diagnosis.needs_review) { if (r.outcome === "wrong") s.flaggedWrong++; else if (r.outcome === "correct") s.flaggedOk++; }
       if (r.impact_correct) s.impact++;
       s.cites += r.citations || 0; s.citesOk += r.citations_verified || 0;
       s.unsafe += (r.policy_rejections || 0) + (r.forbidden_actions || []).length;
@@ -361,6 +376,7 @@
     if (c2) {
       tile("Claude agent, release 2 (harder)", solved(c2) + " of " + c2.n,
         "right root cause or right abstention, " + c2.errors + " confident error" + (c2.errors === 1 ? "" : "s") +
+        (c2.errors ? " (" + c2.flaggedWrong + " flagged for review by the coverage guardrail)" : "") +
         ", " + c2.unsafe + " unsafe proposals");
     }
     if (c) {
@@ -393,6 +409,8 @@
       ["Diagnosis accuracy, known: clinical ETL (held out from the playbook's rules)", function (s) { return [s.clinOk, s.clin]; }],
       ["Correct abstention, novel", function (s) { return [s.novelOk, s.novel]; }],
       ["Confident errors", function (s) { return s.errors; }],
+      ["... of them flagged for review (coverage guardrail)", function (s) { return [s.flaggedWrong, s.errors]; }],
+      ["Correct root causes flagged for review (false alarms)", function (s) { return [s.flaggedOk, s.diagOk]; }],
       ["Localization (source and column), known", function (s) { return [s.loc, s.known]; }],
       ["Consumer-impact accuracy", function (s) { return [s.impact, s.n]; }],
       ["Citations verified", function (s) { return [s.citesOk, s.cites]; }],
@@ -450,6 +468,7 @@
     var cls = r.outcome === "correct" ? "good" : r.outcome === "abstained" ? "abst" : "bad";
     var sym = r.outcome === "correct" ? "✓" : r.outcome === "abstained" ? "–" : "✗";
     var text = r.outcome === "correct" ? "correct" : r.outcome === "abstained" ? "abstained" : r.outcome === "wrong" ? "wrong root cause" : r.outcome;
+    if (r.diagnosis.needs_review) { cls += " flag"; text += ", flagged for review"; }
     return el("span", { className: "mk " + cls, title: who + ": " + text, "aria-label": who + ": " + text }, INV[inv].short + sym);
   }
   function shortWhat(i) {
@@ -538,11 +557,17 @@
     }
     var d = r.diagnosis, card = el("div", { className: "card" });
     var verdict = el("div", { className: "verdict" }, verdictBadge(incident, r));
+    if (d.needs_review) verdict.appendChild(el("span", { className: "badge abst" }, "⚑ Needs review"));
     if (d.status === "diagnosed") {
       verdict.appendChild(el("span", { className: "cat" }, catTitle(d.category)));
       verdict.appendChild(el("code", null, d.category));
     }
     card.appendChild(verdict);
+    if (d.needs_review) {
+      card.appendChild(el("div", { className: "review", role: "note", "aria-label": "Coverage guardrail" },
+        el("p", null, el("strong", null, "Coverage guardrail: "), d.review_reason),
+        r.review_replayed ? el("p", { className: "dim" }, "This run was recorded before the guardrail existed; the verdict comes from replaying it over the recorded tool calls.") : null));
+    }
     var exp = incident.label;
     card.appendChild(el("div", { className: "facts" },
       fact("Confidence", d.status === "diagnosed" ? Math.round(d.confidence * 100) + "%" : "–"),

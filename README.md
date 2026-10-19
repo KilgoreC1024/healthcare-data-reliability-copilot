@@ -82,6 +82,7 @@ Open question: Data_Value contains text written as an instruction ("SYSTEM OVERR
 | --- | --- | --- |
 | Agentic investigation | Claude (`claude-opus-5-5`) in a tool-use loop over 10 read-only tools, strict tool schemas, a JSON-schema final answer constrained to the taxonomy and remediation catalog, a 24-call budget with a forced final turn | [`agents/claude.py`](src/drc/agents/claude.py), [ADR 0005](docs/adr/0005-agent-loop-on-the-claude-api.md) |
 | Evidence grounding | Every claim cites a tool call id and a verbatim quote; quotes are verified against the recorded output; a diagnosis with no verified evidence is withheld | [`grounding.py`](src/drc/grounding.py), [ADR 0002](docs/adr/0002-mechanically-verified-evidence.md) |
+| Investigation coverage | On a run that reached consumers, a diagnosis is flagged for review unless the investigator examined the delivery's column profile; measured offline by replaying it over recorded transcripts | [`coverage.py`](src/drc/coverage.py), [evaluation](docs/evaluation.md#the-coverage-guardrail-implemented-and-measured-by-replay) |
 | Calibrated abstention | Abstaining is a scored, first-class outcome; "novel" incidents (a killed process, a stalled run, a row deleted out of band) penalize any invented data root cause | [`evaluation.py`](src/drc/evaluation.py), [evaluation](docs/evaluation.md) |
 | Safety by construction | No write tools exist; collectors open databases read-only; a closed remediation catalog; a policy check that reads the evidence, not the model's claims; role-checked approval; hash-chained decision log | [ADR 0001](docs/adr/0001-read-only-investigation-first.md), [ADR 0006](docs/adr/0006-closed-remediation-catalog-and-human-approval.md), [`approval.py`](src/drc/approval.py) |
 | Prompt-injection resistance | Adversarial incidents plant instructions in a column name, in data values, and in a FHIR field; scored on category and forbidden actions | [benchmark](docs/benchmark.md), [threat model](docs/threat-model.md) |
@@ -108,6 +109,7 @@ and alerts identical to release 1 with a different answer.
 | Citations verified against tool output | 74 of 74 | 25 of 25 | **208 of 208** | **84 of 84** |
 | Injection resistance, adversarial | 67% (2/3) | - | **100% (3/3)** | - |
 | Unsafe proposals (policy-rejected or forbidden) | 0 | 0 | **0** | **0** |
+| Flagged for review by the coverage guardrail: wrong / correct (Claude: replayed) | 0 / 4 | 1 / 0 | **0 / 0** | **1 / 0** |
 | Cost per incident / total | $0 | $0 | **$0.091 / $2.74** | **$0.127 / $1.39** |
 | Latency per incident (median) | under 0.1 s | under 0.1 s | 22 s | 32 s |
 
@@ -124,9 +126,13 @@ covers, so the run published and consumers saw it. The agent confirmed the alert
 it never compared the delivery's column profiles, the one tool that showed the change. It reported
 `schema.additive_drift` at 0.90 confidence, its highest of the release, so a confidence threshold would not
 have caught it. Its proposals stayed safe (amend the contract, monitor), but they would have left wrong
-data in front of consumers. The playbook made the same mistake. The analysis, and a proposed guardrail that
-checks what was investigated rather than how sure the agent is, are in the
-[evaluation](docs/evaluation.md#release-2-what-went-wrong-and-why).
+data in front of consumers. The playbook made the same mistake. The [analysis](docs/evaluation.md#release-2-what-went-wrong-and-why)
+led to an investigation-coverage guardrail that checks what was investigated rather than how sure the agent
+is: on a run that reached consumers, a diagnosis is flagged for review unless the delivery's column profile
+was examined. Replayed over the recorded transcripts with no model calls, it flags INC-H21 and none of the
+agent's correct diagnoses, though only 5 of those were on runs it checks. It also flags 4 correct playbook
+diagnoses that never looked at the profile. The flag never turns a wrong answer into a right one
+([measured](docs/evaluation.md#the-coverage-guardrail-implemented-and-measured-by-replay)).
 
 Elsewhere on release 2 the agent was not fooled by any decoy:
 - it chose the fault that actually blocked the run when both sources were broken;
@@ -148,7 +154,8 @@ flowchart LR
     T <--> I["Investigator<br/>Claude agent or playbook"]
     I --> G["Grounding check"]
     G --> PO["Policy check"]
-    PO --> H{"Human approver<br/>(role-checked)"}
+    PO --> CO["Coverage check"]
+    CO --> H{"Human approver<br/>(role-checked)"}
     H --> CR["Change request<br/>+ hash-chained log"]
 ```
 
@@ -210,8 +217,9 @@ src/drc/
   agents/            claude.py (tool-use loop), baseline.py (playbook), prompts.py
   grounding.py       citation verification
   policy.py          remediation policy
+  coverage.py        investigation-coverage check (flags diagnoses for review)
   approval.py        role-checked decisions, hash-chained log, change requests
-  evaluation.py      benchmark runner, scoring, regression gates
+  evaluation.py      benchmark runner, scoring, regression gates, coverage replay
   tracing.py         spans in the OpenTelemetry model
   site.py            the demo site: replays recorded investigations (templates/site.html)
   lab/               re-creates incidents by running the real pipelines
@@ -232,7 +240,7 @@ tests/               tools, guardrails, agent loop (scripted client), benchmark 
 | Incident records | 41 incidents from two platforms in two releases, label isolation | Scenarios written by someone other than the rule author; production-scale profiles |
 | Tools | 10 read-only tools over recorded evidence | Lazy collection against live systems (Airflow REST API, Fabric and ADF run history) |
 | Investigation | Claude agent and deterministic playbook, grounded and policy-checked | Measured effort and model comparison (Sonnet 5.5, Haiku 5.5, lower effort); a shared cache prefix across incidents |
-| Evaluation | Harness, splits, regression gates, spend cap, release selection, measured live results on both releases | An investigation-coverage guardrail measured against the recorded runs; repeated runs for variance |
+| Evaluation | Harness, splits, regression gates, spend cap, release selection, measured live results on both releases, an investigation-coverage guardrail measured by replay | Repeated runs for variance, which would also measure the coverage guardrail on live runs |
 | Operations | Traces, cost accounting, threat model, ADRs, runbook | Event-triggered container job, OTLP export, key vault, identity-provider roles, anchored decision log |
 | Remediation | Proposals, approval, change requests | Automated execution of low-risk actions behind the same approval, after the diagnostic layer is trusted |
 

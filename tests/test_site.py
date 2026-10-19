@@ -57,3 +57,19 @@ def test_runs_published_in_separate_files_are_merged(tmp_path):
     assert "claude" in by_id["INC-H01"]["results"] and "claude" in by_id["INC-H20"]["results"]
     assert [r["release"] for r in data["runs"]["claude"]][-1] == 2
     assert len(data["runs"]["baseline"]) == 1
+
+
+def test_the_coverage_verdict_is_shown_and_marked_as_replayed(tmp_path):
+    data = _embedded(site.build(tmp_path).read_text(encoding="utf-8"))
+    results = {i["id"]: i["results"] for i in data["incidents"]}
+    claude = results["INC-H21"]["claude"]
+    # The Claude run predates the guardrail, so its verdict comes from the replay and says so.
+    assert claude["diagnosis"]["needs_review"] and claude["review_replayed"]
+    assert any(e.startswith("needs review (coverage)") for e in claude["guardrail_events"])
+    # The published playbook results were produced with the guardrail in place.
+    assert results["INC-H21"]["baseline"]["diagnosis"]["needs_review"]
+    assert not results["INC-H21"]["baseline"]["review_replayed"]
+    flagged = sorted(
+        i for i, r in results.items() if r.get("claude", {}).get("diagnosis", {}).get("needs_review")
+    )
+    assert flagged == ["INC-H21"]

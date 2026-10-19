@@ -1,4 +1,4 @@
-"""Command line: `drc incidents | investigate | eval | approve | audit-log | collect | lab | site`."""
+"""Command line: `drc incidents | investigate | eval | coverage-replay | approve | audit-log | collect | lab | site`."""
 
 from __future__ import annotations
 
@@ -11,6 +11,12 @@ from drc.lab import store
 from drc.models import Investigation
 
 RUNS = Path("runs")
+# Published results the coverage guardrail is replayed over by default.
+COVERAGE_REPLAY_DEFAULTS = (
+    "eval/results/claude.json",
+    "eval/results/claude-release2.json",
+    "eval/results/baseline.json",
+)
 
 
 def _investigator(args: argparse.Namespace):
@@ -96,6 +102,20 @@ def cmd_eval(args: argparse.Namespace) -> int:
         for failure in failures:
             print(f"GATE FAILED: {failure}", file=sys.stderr)
         return 1 if failures else 0
+    return 0
+
+
+def cmd_coverage_replay(args: argparse.Namespace) -> int:
+    from drc import evaluation
+
+    paths = [Path(p) for p in args.results] or [Path(p) for p in COVERAGE_REPLAY_DEFAULTS]
+    runs = {p.as_posix(): json.loads(p.read_text(encoding="utf-8")) for p in paths}
+    report = evaluation.render_coverage_replay(runs)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(report, encoding="utf-8")
+    print(report.split("\n## ", 1)[0].rstrip())
+    print(f"\nwrote {out.as_posix()}")
     return 0
 
 
@@ -198,6 +218,16 @@ def main(argv: list[str] | None = None) -> int:
         help="spend cap in USD: no new investigation starts once spend plus a running reserve would exceed it",
     )
     p.set_defaults(func=cmd_eval)
+
+    p = sub.add_parser(
+        "coverage-replay",
+        help="replay the investigation-coverage guardrail over published results (offline, no model calls)",
+    )
+    p.add_argument(
+        "results", nargs="*", help=f"results files (default: {', '.join(COVERAGE_REPLAY_DEFAULTS)})"
+    )
+    p.add_argument("--out", default="eval/results/coverage-replay.md")
+    p.set_defaults(func=cmd_coverage_replay)
 
     p = sub.add_parser("approve", help="record a human decision on a remediation proposal")
     p.add_argument("investigation", help="a saved investigation (runs/investigations/*.json)")

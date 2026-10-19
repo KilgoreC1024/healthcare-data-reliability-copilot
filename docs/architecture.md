@@ -18,7 +18,8 @@ flowchart TB
     I --- A2["Deterministic playbook<br/>(baseline / degraded mode)"]
     I --> G["Grounding check<br/>quotes must exist in tool output"]
     G --> P["Policy check<br/>closed catalog · evidence-based limits"]
-    P --> R["Report: diagnosis, verified evidence,<br/>impact, proposals"]
+    P --> CO["Coverage check<br/>published run · profile examined?"]
+    CO --> R["Report: diagnosis, verified evidence,<br/>impact, proposals, review flag"]
     R --> AP{"Named human approver<br/>with the catalog role"}
     AP -->|approve| CR["Change request<br/>(a person executes it)"]
     AP -->|approve / reject| L[("Hash-chained<br/>decision log")]
@@ -42,8 +43,9 @@ Claude agent's call to the model API.
 | `drc.agents.baseline` | The deterministic playbook (control and degraded mode) |
 | `drc.grounding` | Verifies citations against the call ledger; withholds diagnoses with no verified evidence |
 | `drc.policy` | Validates proposals against the catalog and the recorded publish state |
+| `drc.coverage` | Flags a diagnosis for review when this run's output reached consumers and the delivery's column profile was not examined; replays over recorded investigations |
 | `drc.approval` | Role-checked decisions, hash-chained log, change requests |
-| `drc.evaluation` | Runs the benchmark, scores against labels, enforces regression gates |
+| `drc.evaluation` | Runs the benchmark, scores against labels, enforces regression gates, replays the coverage check over published results |
 | `drc.tracing` | Spans for each investigation, model turn, tool call, and guardrail |
 | `drc.lab` | Re-creates the benchmark by running the real pipelines against injected faults |
 
@@ -56,7 +58,7 @@ sequenceDiagram
     participant Col as Collector
     participant Inv as Investigator
     participant Tools as Read-only tools
-    participant G as Grounding + policy
+    participant G as Grounding, policy, coverage
     participant H as Approver
     P->>Col: run blocked / failed / stalled / published with new warnings
     Col->>Inv: IncidentBundle (alert only is shown first)

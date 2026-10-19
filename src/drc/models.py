@@ -99,6 +99,10 @@ class Diagnosis(BaseModel):
     remediation: list[Proposal] = Field(default_factory=list)
     open_questions: list[str] = Field(default_factory=list)
     abstain_reason: str | None = None
+    # Set by the coverage guardrail, never by the investigator. The diagnosis keeps its category, but it is not
+    # reported as confident until a person has examined the evidence `review_reason` names.
+    needs_review: bool = False
+    review_reason: str | None = None
 
 
 class ToolCall(BaseModel):

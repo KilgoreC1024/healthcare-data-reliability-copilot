@@ -70,6 +70,7 @@ def decide(
         "trace_id": investigation.trace_id,
         "diagnosis_status": investigation.diagnosis.status,
         "diagnosis_category": investigation.diagnosis.category,
+        "diagnosis_needs_review": investigation.diagnosis.needs_review,
         "verified_citations": sum(bool(c.verified) for c in investigation.diagnosis.evidence),
         "proposal_number": proposal_number,
         "action_type": proposal.action_type,
@@ -155,6 +156,10 @@ def render_change_request(investigation: Investigation, proposal: Proposal, reco
         f"- **Risk:** {proposal.risk}",
         f"- **Diagnosis:** {category} ({d.status}, confidence {d.confidence:.2f})",
         f"- **Investigation trace:** {investigation.trace_id}",
+    ]
+    if d.needs_review:
+        lines.append(f"- **Needs review (coverage check):** {d.review_reason}")
+    lines += [
         "",
         "## Why",
         "",
